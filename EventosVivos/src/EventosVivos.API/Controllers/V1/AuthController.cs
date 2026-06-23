@@ -12,11 +12,13 @@ using System.Text.Json;
 
 namespace EventosVivos.API.Controllers.V1;
 
+/// <summary>Handles Microsoft OAuth2 authentication and JWT token lifecycle.</summary>
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/auth")]
 [AllowAnonymous]
 [EnableRateLimiting(RateLimitPolicies.Auth)]
+[Produces("application/json")]
 public class AuthController(
     IOptions<JwtSettings> jwtOptions,
     IOptions<OAuthSettings> oauthOptions,
@@ -27,9 +29,19 @@ public class AuthController(
     private readonly OAuthSettings _oauth = oauthOptions.Value;
 
     /// <summary>
-    /// Exchanges a Microsoft authorization code for an app access token + refresh token.
+    /// Exchanges a Microsoft OAuth2 authorization code for an access token and a refresh token.
     /// </summary>
+    /// <remarks>
+    /// The frontend receives the authorization code after Microsoft redirects back to the
+    /// callback URL. This endpoint exchanges that code server-side (keeping the client_secret
+    /// on the server) and returns a short-lived access token (default: 60 min) and a
+    /// long-lived refresh token (default: 7 days).
+    /// </remarks>
+    /// <response code="200">Token pair emitted successfully.</response>
+    /// <response code="401">The authorization code could not be exchanged with Microsoft.</response>
     [HttpPost("microsoft/exchange")]
+    [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> MicrosoftExchange([FromBody] CodeExchangeRequest request, CancellationToken ct)
     {
         var userInfo = await ExchangeMicrosoftCodeAsync(request.Code, request.RedirectUri, ct);
@@ -42,10 +54,18 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Issues a new access token + refresh token given a valid, non-expired refresh token.
-    /// Implements refresh token rotation: each use invalidates the previous refresh token.
+    /// Issues a new access token and refresh token from a valid refresh token (rotation).
     /// </summary>
+    /// <remarks>
+    /// Each successful call invalidates the provided refresh token and returns a brand-new pair.
+    /// If the refresh token is expired or tampered, the endpoint returns 401 and the user
+    /// must re-authenticate via the OAuth2 flow.
+    /// </remarks>
+    /// <response code="200">New token pair issued.</response>
+    /// <response code="401">Refresh token is invalid, expired, or is an access token.</response>
     [HttpPost("refresh")]
+    [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public IActionResult Refresh([FromBody] RefreshRequest request)
     {
         var principal = ValidateRefreshToken(request.RefreshToken);
@@ -87,8 +107,8 @@ public class AuthController(
                 return null;
             }
 
-            var json = await tokenResponse.Content.ReadAsStringAsync(ct);
-            var doc  = JsonDocument.Parse(json);
+            var json    = await tokenResponse.Content.ReadAsStringAsync(ct);
+            var doc     = JsonDocument.Parse(json);
             var idToken = doc.RootElement.GetProperty("id_token").GetString()!;
             return ExtractClaimsFromJwt(idToken);
         }
@@ -133,7 +153,6 @@ public class AuthController(
             new Claim("token_type",                  "access"),
             new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString())
         };
-
         return BuildJwt(claims, DateTime.UtcNow.AddMinutes(_jwt.ExpiresInMinutes));
     }
 
@@ -147,7 +166,6 @@ public class AuthController(
             new Claim("token_type",                 "refresh"),
             new Claim(JwtRegisteredClaimNames.Jti,  Guid.NewGuid().ToString())
         };
-
         return BuildJwt(claims, DateTime.UtcNow.AddDays(_jwt.RefreshTokenExpiresInDays));
     }
 
@@ -155,14 +173,12 @@ public class AuthController(
     {
         var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
         var token = new JwtSecurityToken(
             issuer:            _jwt.Issuer,
             audience:          _jwt.Audience,
             claims:            claims,
             expires:           expires,
             signingCredentials: creds);
-
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
@@ -172,7 +188,6 @@ public class AuthController(
         {
             var key     = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
             var handler = new JwtSecurityTokenHandler();
-
             var principal = handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -184,8 +199,6 @@ public class AuthController(
                 ValidateLifetime         = true,
                 ClockSkew                = TimeSpan.Zero
             }, out _);
-
-            // Reject access tokens passed where a refresh token is expected
             if (principal.FindFirstValue("token_type") != "refresh") return null;
             return principal;
         }
@@ -193,6 +206,18 @@ public class AuthController(
     }
 }
 
+/// <summary>Request body for the Microsoft OAuth2 code exchange.</summary>
+/// <param name="Code">Authorization code received from Microsoft's redirect.</param>
+/// <param name="RedirectUri">Must match the URI registered in Azure AD.</param>
 public record CodeExchangeRequest(string Code, string RedirectUri);
+
+/// <summary>Request body for refreshing tokens.</summary>
+/// <param name="RefreshToken">A valid, non-expired refresh token.</param>
 public record RefreshRequest(string RefreshToken);
+
+/// <summary>JWT token pair returned after successful authentication or refresh.</summary>
+/// <param name="AccessToken">Short-lived JWT for API calls (default: 60 min).</param>
+/// <param name="RefreshToken">Long-lived token to obtain new access tokens (default: 7 days).</param>
+/// <param name="TokenType">Always "Bearer".</param>
+/// <param name="ExpiresIn">Access token lifetime in seconds.</param>
 public record TokenResponse(string AccessToken, string RefreshToken, string TokenType, int ExpiresIn);

@@ -4,6 +4,7 @@ using EventosVivos.API.Middleware;
 using EventosVivos.Application;
 using EventosVivos.Application.Common;
 using EventosVivos.Infrastructure;
+using System.Reflection;
 using EventosVivos.Infrastructure.Persistence;
 using EventosVivos.Infrastructure.Persistence.Seeding;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -124,16 +125,36 @@ try
          .AllowAnyHeader()
          .AllowAnyMethod()));
 
-    // Swagger
+    // Swagger / OpenAPI
     builder.Services.AddSwaggerGen(c =>
     {
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "EventosVivos API", Version = "v1" });
+        c.SwaggerDoc("v1", new OpenApiInfo
+        {
+            Title   = "EventosVivos API",
+            Version = "v1",
+            Description =
+                "REST API para el sistema de gestión y reserva de eventos en vivo.\n\n" +
+                "### Autenticación\n" +
+                "Usa **Microsoft OAuth2** (Authorization Code Flow). Obtén un JWT desde " +
+                "`POST /api/v1/auth/microsoft/exchange` y pásalo como `Bearer <token>` " +
+                "en el encabezado `Authorization`.\n\n" +
+                "### Paginación\n" +
+                "Los listados usan **cursor-based pagination**. El campo `nextCursor` de " +
+                "la respuesta se pasa como `cursor` en la siguiente petición.\n\n" +
+                "### Idempotencia\n" +
+                "Incluye el encabezado `Idempotency-Key: <UUID>` en `POST`/`PUT`/`PATCH` " +
+                "para garantizar que peticiones duplicadas devuelvan la misma respuesta."
+        });
+
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFile), includeControllerXmlComments: true);
+
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
-            Type = SecuritySchemeType.Http,
-            Scheme = "bearer",
+            Type        = SecuritySchemeType.Http,
+            Scheme      = "bearer",
             BearerFormat = "JWT",
-            Description = "Enter your JWT token"
+            Description = "JWT obtenido desde `POST /api/v1/auth/microsoft/exchange`."
         });
         c.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
@@ -167,11 +188,14 @@ try
     app.UseAuthentication();
     app.UseAuthorization();
 
-    if (app.Environment.IsDevelopment())
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
     {
-        app.UseSwagger();
-        app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventosVivos API v1"));
-    }
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "EventosVivos API v1");
+        c.DocumentTitle = "EventosVivos API Docs";
+        c.DefaultModelsExpandDepth(1);
+        c.DisplayRequestDuration();
+    });
 
     app.MapControllers();
 
