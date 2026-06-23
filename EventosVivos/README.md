@@ -32,7 +32,7 @@ SPA con lazy-loading por ruta, interceptor JWT centralizado, y Angular Signals p
 | ORM | Entity Framework Core 9 + SQLite |
 | CQRS | MediatR 12 |
 | Validación | FluentValidation 11 |
-| Autenticación | JWT Bearer + Google/Microsoft OIDC |
+| Autenticación | JWT Bearer + Microsoft OIDC (Azure AD) |
 | Logging | NLog 5 |
 | Versionado API | Asp.Versioning.Mvc 8 |
 | Documentación | Swagger / Swashbuckle |
@@ -48,9 +48,8 @@ SPA con lazy-loading por ruta, interceptor JWT centralizado, y Angular Signals p
 - .NET 9 SDK
 - Node.js 22+ / npm 10+
 
-### 1. Configurar credenciales OAuth2
+### 1. Configurar credenciales OAuth2 (Microsoft / Azure AD)
 
-#### Microsoft (Azure AD)
 1. Ve a [Azure Portal](https://portal.azure.com/) → Azure Active Directory → App registrations → New registration
 2. Agrega `http://localhost:4200/auth/callback` como Redirect URI (tipo "Web")
 3. En "Certificates & secrets" crea un client secret
@@ -62,10 +61,6 @@ SPA con lazy-loading por ruta, interceptor JWT centralizado, y Angular Signals p
 ```json
 {
   "OAuth": {
-    "Google": {
-      "ClientId": "TU_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
-      "ClientSecret": "TU_GOOGLE_CLIENT_SECRET"
-    },
     "Microsoft": {
       "ClientId": "TU_MICROSOFT_CLIENT_ID",
       "ClientSecret": "TU_MICROSOFT_CLIENT_SECRET"
@@ -79,7 +74,6 @@ SPA con lazy-loading por ruta, interceptor JWT centralizado, y Angular Signals p
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:5000/api/v1',
-  googleClientId: 'TU_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
   microsoftClientId: 'TU_MICROSOFT_CLIENT_ID'
 };
 ```
@@ -117,16 +111,15 @@ npm start
 
 ## Endpoints REST (v1)
 
-### Autenticación (Authorization Code Flow)
+### Autenticación (Authorization Code Flow — Microsoft)
 | Método | Ruta | Descripción |
 |---|---|---|
-| POST | `/api/v1/auth/google/exchange` | Recibe `{code, redirectUri}` → intercambia con Google → emite JWT |
 | POST | `/api/v1/auth/microsoft/exchange` | Recibe `{code, redirectUri}` → intercambia con Microsoft → emite JWT |
 
 **Flujo completo:**
-1. Usuario hace clic en "Continuar con Google/Microsoft"
-2. Angular redirige al proveedor con `client_id`, `redirect_uri`, `scope`, `state` (CSRF token)
-3. Proveedor autentica y redirige a `/auth/callback?code=...&state=...`
+1. Usuario hace clic en "Continuar con Microsoft"
+2. Angular redirige a Azure AD con `client_id`, `redirect_uri`, `scope`, `state` (CSRF token)
+3. Microsoft autentica y redirige a `/auth/callback?code=...&state=...`
 4. El componente callback envía el código al backend
 5. El backend intercambia el código por tokens usando el `client_secret` (nunca expuesto al cliente)
 6. Backend parsea el `id_token`, extrae email/nombre, emite JWT propio
@@ -183,8 +176,8 @@ Middleware que intercepta POST/PUT/PATCH con header `Idempotency-Key`. Almacena 
 ### Manejo de errores
 `ExceptionHandlingMiddleware` mapea excepciones de dominio a códigos HTTP apropiados (`422`, `404`, `409`) y retorna `application/problem+json`. En desarrollo incluye stacktrace; en producción solo el mensaje.
 
-### JWT + OIDC (Authorization Code Flow)
-El frontend redirige al proveedor OAuth2 (Google/Microsoft) con un parámetro `state` aleatorio guardado en `sessionStorage` como protección CSRF. Al regresar, el backend recibe el `code` y lo intercambia server-side (usando el `client_secret` que nunca sale del servidor) por tokens del proveedor. El `id_token` retornado es un JWT firmado por el proveedor — se parsea para extraer email y nombre, y se emite un JWT propio de la aplicación. Todos los endpoints de escritura requieren `[Authorize]`.
+### JWT + OIDC (Authorization Code Flow — Microsoft)
+El frontend redirige a Azure AD con un parámetro `state` aleatorio guardado en `sessionStorage` como protección CSRF. Al regresar, el backend recibe el `code` y lo intercambia server-side (usando el `client_secret` que nunca sale del servidor) por tokens de Microsoft. El `id_token` retornado es un JWT firmado por Microsoft — se parsea para extraer email y nombre, y se emite un JWT propio de la aplicación. Todos los endpoints de escritura requieren `[Authorize]`.
 
 ### Azure App Services
 La API está lista para despliegue en Azure App Services:
