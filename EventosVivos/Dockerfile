@@ -1,5 +1,7 @@
 # ─── Stage 1: Build Angular SPA ──────────────────────────────────────────────
-FROM node:22-alpine AS frontend-build
+# Use Debian-based Node (not Alpine) — Angular's build toolchain (esbuild,
+# lightningcss, rollup) ships glibc binaries; Alpine uses musl and may fail.
+FROM node:22-slim AS frontend-build
 WORKDIR /app
 
 COPY frontend/package*.json ./
