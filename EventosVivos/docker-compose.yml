@@ -5,10 +5,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "7080:8080"
-    volumes:
-      - eventosvivos_data:/app/data
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "${DATABASE_URL}"
       JwtSettings__Secret: "${JWT_SECRET}"
       JwtSettings__Issuer: EventosVivos
       JwtSettings__Audience: EventosVivosClients
@@ -22,6 +21,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-
-volumes:
-  eventosvivos_data:

@@ -29,7 +29,7 @@ try
 
     // App layers
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.EnvironmentName);
 
     // JWT settings
     var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
