@@ -27,8 +27,7 @@ public class AuthController(
     private readonly OAuthSettings _oauth = oauthOptions.Value;
 
     /// <summary>
-    /// Exchanges a Microsoft authorization code (from OAuth2 redirect) for an app JWT.
-    /// The frontend sends the code it received from login.microsoftonline.com.
+    /// Exchanges a Microsoft authorization code for an app access token + refresh token.
     /// </summary>
     [HttpPost("microsoft/exchange")]
     public async Task<IActionResult> MicrosoftExchange([FromBody] CodeExchangeRequest request, CancellationToken ct)
@@ -37,9 +36,32 @@ public class AuthController(
         if (userInfo is null)
             return Unauthorized(new { error = "Could not exchange Microsoft authorization code." });
 
-        var token = GenerateJwt(userInfo.Value.Email, userInfo.Value.Name, "microsoft");
-        return Ok(new TokenResponse(token, "Bearer", _jwt.ExpiresInMinutes * 60));
+        var accessToken  = GenerateAccessToken(userInfo.Value.Email, userInfo.Value.Name, "microsoft");
+        var refreshToken = GenerateRefreshToken(userInfo.Value.Email, userInfo.Value.Name, "microsoft");
+        return Ok(new TokenResponse(accessToken, refreshToken, "Bearer", _jwt.ExpiresInMinutes * 60));
     }
+
+    /// <summary>
+    /// Issues a new access token + refresh token given a valid, non-expired refresh token.
+    /// Implements refresh token rotation: each use invalidates the previous refresh token.
+    /// </summary>
+    [HttpPost("refresh")]
+    public IActionResult Refresh([FromBody] RefreshRequest request)
+    {
+        var principal = ValidateRefreshToken(request.RefreshToken);
+        if (principal is null)
+            return Unauthorized(new { error = "Invalid or expired refresh token." });
+
+        var email    = principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!;
+        var name     = principal.FindFirstValue(JwtRegisteredClaimNames.Name) ?? email;
+        var provider = principal.FindFirstValue("provider") ?? "microsoft";
+
+        var newAccessToken  = GenerateAccessToken(email, name, provider);
+        var newRefreshToken = GenerateRefreshToken(email, name, provider);
+        return Ok(new TokenResponse(newAccessToken, newRefreshToken, "Bearer", _jwt.ExpiresInMinutes * 60));
+    }
+
+    // ── Private helpers ──────────────────────────────────────────────────────
 
     private async Task<(string Email, string Name)?> ExchangeMicrosoftCodeAsync(string code, string redirectUri, CancellationToken ct)
     {
@@ -50,12 +72,12 @@ public class AuthController(
                 _oauth.Microsoft.TokenEndpoint,
                 new FormUrlEncodedContent(new Dictionary<string, string>
                 {
-                    ["code"] = code,
-                    ["client_id"] = _oauth.Microsoft.ClientId,
+                    ["code"]          = code,
+                    ["client_id"]     = _oauth.Microsoft.ClientId,
                     ["client_secret"] = _oauth.Microsoft.ClientSecret,
-                    ["redirect_uri"] = redirectUri,
-                    ["grant_type"] = "authorization_code",
-                    ["scope"] = "openid email profile User.Read"
+                    ["redirect_uri"]  = redirectUri,
+                    ["grant_type"]    = "authorization_code",
+                    ["scope"]         = "openid email profile User.Read"
                 }), ct);
 
             if (!tokenResponse.IsSuccessStatusCode)
@@ -66,7 +88,7 @@ public class AuthController(
             }
 
             var json = await tokenResponse.Content.ReadAsStringAsync(ct);
-            var doc = JsonDocument.Parse(json);
+            var doc  = JsonDocument.Parse(json);
             var idToken = doc.RootElement.GetProperty("id_token").GetString()!;
             return ExtractClaimsFromJwt(idToken);
         }
@@ -100,30 +122,77 @@ public class AuthController(
         catch { return null; }
     }
 
-    private string GenerateJwt(string email, string name, string provider)
+    private string GenerateAccessToken(string email, string name, string provider)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, email),
+            new Claim(JwtRegisteredClaimNames.Sub,   email),
             new Claim(JwtRegisteredClaimNames.Email, email),
-            new Claim(JwtRegisteredClaimNames.Name, name),
-            new Claim("provider", provider),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Name,  name),
+            new Claim("provider",                    provider),
+            new Claim("token_type",                  "access"),
+            new Claim(JwtRegisteredClaimNames.Jti,   Guid.NewGuid().ToString())
         };
 
+        return BuildJwt(claims, DateTime.UtcNow.AddMinutes(_jwt.ExpiresInMinutes));
+    }
+
+    private string GenerateRefreshToken(string email, string name, string provider)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub,  email),
+            new Claim(JwtRegisteredClaimNames.Name, name),
+            new Claim("provider",                   provider),
+            new Claim("token_type",                 "refresh"),
+            new Claim(JwtRegisteredClaimNames.Jti,  Guid.NewGuid().ToString())
+        };
+
+        return BuildJwt(claims, DateTime.UtcNow.AddDays(_jwt.RefreshTokenExpiresInDays));
+    }
+
+    private string BuildJwt(IEnumerable<Claim> claims, DateTime expires)
+    {
+        var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
         var token = new JwtSecurityToken(
-            issuer: _jwt.Issuer,
-            audience: _jwt.Audience,
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(_jwt.ExpiresInMinutes),
+            issuer:            _jwt.Issuer,
+            audience:          _jwt.Audience,
+            claims:            claims,
+            expires:           expires,
             signingCredentials: creds);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
+
+    private ClaimsPrincipal? ValidateRefreshToken(string token)
+    {
+        try
+        {
+            var key     = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
+            var handler = new JwtSecurityTokenHandler();
+
+            var principal = handler.ValidateToken(token, new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey         = key,
+                ValidateIssuer           = true,
+                ValidIssuer              = _jwt.Issuer,
+                ValidateAudience         = true,
+                ValidAudience            = _jwt.Audience,
+                ValidateLifetime         = true,
+                ClockSkew                = TimeSpan.Zero
+            }, out _);
+
+            // Reject access tokens passed where a refresh token is expected
+            if (principal.FindFirstValue("token_type") != "refresh") return null;
+            return principal;
+        }
+        catch { return null; }
+    }
 }
 
 public record CodeExchangeRequest(string Code, string RedirectUri);
-public record TokenResponse(string AccessToken, string TokenType, int ExpiresIn);
+public record RefreshRequest(string RefreshToken);
+public record TokenResponse(string AccessToken, string RefreshToken, string TokenType, int ExpiresIn);
