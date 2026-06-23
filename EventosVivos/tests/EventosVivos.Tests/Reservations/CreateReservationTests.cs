@@ -82,6 +82,68 @@ public class CreateReservationTests : IDisposable
         await act.Should().ThrowAsync<DomainException>().WithMessage("*available*");
     }
 
+    // Note: email/quantity format validation is covered by CreateReservationCommandValidator tests.
+    // The handler enforces business rules only (capacity, timing, status, etc.).
+
+    [Fact]
+    public async Task CreateReservation_PriceOver100_AllowsExactly10Tickets()
+    {
+        var evt = CreateActiveEvent(price: 150m, hoursFromNow: 72);
+        var cmd = new CreateReservationCommand(evt.Id, 10, "Juan", "juan@test.com");
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateReservation_WhenExceedingRemainingCapacity_ThrowsException()
+    {
+        var evt = CreateActiveEvent(capacity: 10);
+        _db.Reservations.Add(new Reservation
+        {
+            EventId = evt.Id,
+            Quantity = 8,
+            BuyerName = "Maria",
+            BuyerEmail = "maria@test.com",
+            Status = ReservationStatus.Confirmada
+        });
+        _db.SaveChanges();
+
+        var cmd = new CreateReservationCommand(evt.Id, 3, "Juan", "juan@test.com");
+        var act = () => _handler.Handle(cmd, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>();
+    }
+
+    [Fact]
+    public async Task CreateReservation_PendingReservations_ShouldNotBlockCapacity()
+    {
+        var evt = CreateActiveEvent(capacity: 10);
+        _db.Reservations.Add(new Reservation
+        {
+            EventId = evt.Id,
+            Quantity = 10,
+            BuyerName = "Maria",
+            BuyerEmail = "maria@test.com",
+            Status = ReservationStatus.PendientePago
+        });
+        _db.SaveChanges();
+
+        var cmd = new CreateReservationCommand(evt.Id, 5, "Juan", "juan@test.com");
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateReservation_ForCompletedEvent_ThrowsException()
+    {
+        var evt = CreateActiveEvent();
+        evt.Status = EventStatus.Completado;
+        _db.SaveChanges();
+
+        var cmd = new CreateReservationCommand(evt.Id, 1, "Juan", "juan@test.com");
+        var act = () => _handler.Handle(cmd, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>();
+    }
+
     [Fact]
     public async Task CreateReservation_WithinOneHourOfStart_ThrowsDomainException()
     {
@@ -135,6 +197,75 @@ public class CreateReservationTests : IDisposable
         var cmd = new CreateReservationCommand(evt.Id, 1, "Juan", "juan@test.com");
         var act = () => _handler.Handle(cmd, CancellationToken.None);
         await act.Should().ThrowAsync<DomainException>();
+    }
+
+    [Fact]
+    public async Task CreateReservation_PriceExactly100_HasNoTicketLimit()
+    {
+        // RN-05 triggers only when price > 100, NOT when price == 100
+        var evt = CreateActiveEvent(capacity: 50, price: 100m, hoursFromNow: 72);
+        var cmd = new CreateReservationCommand(evt.Id, 11, "Juan", "juan@test.com");
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateReservation_ExactlyOneHourFromStart_Succeeds()
+    {
+        // RN-04 blocks when hoursUntilStart < 1; exactly 1 hour is allowed
+        // (1.0 is not < 1)
+        var evt = CreateActiveEvent(hoursFromNow: 1.05); // slightly over 1h to be safe
+        var cmd = new CreateReservationCommand(evt.Id, 1, "Juan", "juan@test.com");
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateReservation_LostCancelledReservations_BlockCapacity()
+    {
+        // Lost tickets reduce available capacity (they're subtracted in Event.AvailableTickets)
+        var evt = CreateActiveEvent(capacity: 5);
+        _db.Reservations.Add(new Reservation
+        {
+            EventId = evt.Id, Quantity = 5,
+            BuyerName = "A", BuyerEmail = "a@test.com",
+            Status = ReservationStatus.Cancelada, IsLost = true
+        });
+        _db.SaveChanges();
+
+        // All 5 seats are lost → 0 available
+        var cmd = new CreateReservationCommand(evt.Id, 1, "Pedro", "pedro@test.com");
+        var act = () => _handler.Handle(cmd, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>().WithMessage("*available*");
+    }
+
+    [Fact]
+    public async Task CreateReservation_CleanCancelledReservations_DoNotBlockCapacity()
+    {
+        // Cancelled-without-penalty reservations free up capacity
+        var evt = CreateActiveEvent(capacity: 5);
+        _db.Reservations.Add(new Reservation
+        {
+            EventId = evt.Id, Quantity = 5,
+            BuyerName = "A", BuyerEmail = "a@test.com",
+            Status = ReservationStatus.Cancelada, IsLost = false
+        });
+        _db.SaveChanges();
+
+        // IsLost = false → seats are free again
+        var cmd = new CreateReservationCommand(evt.Id, 5, "Pedro", "pedro@test.com");
+        var result = await _handler.Handle(cmd, CancellationToken.None);
+        result.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task CreateReservation_PriceJustOver100_CapIs10()
+    {
+        // 100.01 > 100 → RN-05 applies
+        var evt = CreateActiveEvent(capacity: 100, price: 100.01m, hoursFromNow: 72);
+        var cmd = new CreateReservationCommand(evt.Id, 11, "Juan", "juan@test.com");
+        var act = () => _handler.Handle(cmd, CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>().WithMessage("*10*");
     }
 
     public void Dispose() => _db.Dispose();

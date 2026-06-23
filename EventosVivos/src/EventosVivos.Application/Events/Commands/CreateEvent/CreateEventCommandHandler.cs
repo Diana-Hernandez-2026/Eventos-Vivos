@@ -25,10 +25,11 @@ public class CreateEventCommandHandler(
         if (hasOverlap)
             throw new DomainException("Another active event at this venue overlaps the requested time slot.");
 
-        // RN-03: weekends cannot start at or after 22:00 (evaluated in business local time)
+        // RN-03: weekend events cannot start strictly after 22:00 (22:00 itself is allowed)
         var localStart = clock.ToBusinessLocal(cmd.StartDateTime);
-        if (localStart.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday && localStart.Hour >= 22)
-            throw new DomainException("Los eventos en fin de semana no pueden iniciar a las 22:00 o después.");
+        if (localStart.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
+            && localStart.TimeOfDay > TimeSpan.FromHours(22))
+            throw new DomainException("Los eventos en fin de semana no pueden iniciar después de las 22:00.");
 
         var evt = new Event
         {

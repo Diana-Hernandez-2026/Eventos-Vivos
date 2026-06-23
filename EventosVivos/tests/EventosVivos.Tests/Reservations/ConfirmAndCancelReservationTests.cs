@@ -129,6 +129,25 @@ public class ConfirmAndCancelReservationTests : IDisposable
     }
 
     [Fact]
+    public async Task CancelReservation_WhenNotConfirmed_ShouldThrow()
+    {
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.PendientePago);
+
+        var act = () => _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+        await act.Should().ThrowAsync<DomainException>();
+    }
+
+    [Fact]
+    public async Task CancelReservation_SafelyAbove48Hours_ShouldNotBeLost()
+    {
+        // 48.5h is safely above the 48h threshold even accounting for test execution time
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.Confirmada, eventHoursFromNow: 48.5);
+
+        var result = await _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+        result.IsLost.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ConfirmPayment_GeneratesUniqueCode()
     {
         var (_, r1) = CreateEventAndReservation(ReservationStatus.PendientePago);
@@ -138,6 +157,86 @@ public class ConfirmAndCancelReservationTests : IDisposable
         var res2 = await _confirmHandler.Handle(new ConfirmPaymentCommand(r2.Id), CancellationToken.None);
 
         res1.ReservationCode.Should().NotBe(res2.ReservationCode);
+    }
+
+    [Fact]
+    public async Task ConfirmPayment_ShouldNotRegenerateCodeIfAlreadyConfirmed()
+    {
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.PendientePago);
+
+        var first = await _confirmHandler.Handle(new ConfirmPaymentCommand(reservation.Id), CancellationToken.None);
+        var act = () => _confirmHandler.Handle(new ConfirmPaymentCommand(reservation.Id), CancellationToken.None);
+
+        await act.Should().ThrowAsync<ConflictException>();
+
+        first.ReservationCode.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ConfirmPayment_EventNotFound_ShouldThrow()
+    {
+        var act = () => _confirmHandler.Handle(new ConfirmPaymentCommand(Guid.NewGuid()), CancellationToken.None);
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task CancelReservation_EventNotFound_ShouldThrow()
+    {
+        var act = () => _cancelHandler.Handle(new CancelReservationCommand(Guid.NewGuid()), CancellationToken.None);
+        await act.Should().ThrowAsync<NotFoundException>();
+    }
+
+    [Fact]
+    public async Task CancelReservation_47HoursFromEvent_AppliesPenalty()
+    {
+        // 47 hours < 48 hours threshold → penalty must apply
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.Confirmada, eventHoursFromNow: 47);
+
+        var result = await _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+
+        result.IsLost.Should().BeTrue();
+        result.Status.Should().Be("Cancelada");
+    }
+
+    [Fact]
+    public async Task CancelReservation_49HoursFromEvent_NoPenalty()
+    {
+        // 49 hours > 48 hours threshold → no penalty
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.Confirmada, eventHoursFromNow: 49);
+
+        var result = await _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+
+        result.IsLost.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task CancelReservation_SetsTimestamp()
+    {
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.Confirmada, eventHoursFromNow: 72);
+
+        var result = await _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+
+        result.CancelledAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task ConfirmPayment_ReturnsCorrectReservationId()
+    {
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.PendientePago);
+
+        var result = await _confirmHandler.Handle(new ConfirmPaymentCommand(reservation.Id), CancellationToken.None);
+
+        result.ReservationId.Should().Be(reservation.Id);
+    }
+
+    [Fact]
+    public async Task CancelReservation_ReturnsCorrectReservationId()
+    {
+        var (_, reservation) = CreateEventAndReservation(ReservationStatus.Confirmada);
+
+        var result = await _cancelHandler.Handle(new CancelReservationCommand(reservation.Id), CancellationToken.None);
+
+        result.ReservationId.Should().Be(reservation.Id);
     }
 
     public void Dispose() => _db.Dispose();
