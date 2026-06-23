@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EventosVivos.API/EventosVivos.API.csproj" />
+    <Project Path="src/EventosVivos.Application/EventosVivos.Application.csproj" />
+    <Project Path="src/EventosVivos.Domain/EventosVivos.Domain.csproj" />
+    <Project Path="src/EventosVivos.Infrastructure/EventosVivos.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EventosVivos.Tests/EventosVivos.Tests.csproj" />
+  </Folder>
+</Solution>

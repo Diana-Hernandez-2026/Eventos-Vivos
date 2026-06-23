@@ -1,0 +1,153 @@
+<div class="page">
+  <header>
+    <h1>EventosVivos</h1>
+    <div class="header-actions">
+      <button *ngIf="auth.isAuthenticated()" (click)="showCreate = !showCreate">
+        {{ showCreate ? 'Cancelar' : '+ Crear Evento' }}
+      </button>
+      <button *ngIf="auth.isAuthenticated()" class="secondary" (click)="auth.logout()">Cerrar sesión</button>
+      <button *ngIf="!auth.isAuthenticated()" class="secondary" (click)="router.navigate(['/login'])">Iniciar sesión</button>
+    </div>
+  </header>
+
+  <!-- Create Event Form -->
+  <div *ngIf="showCreate && auth.isAuthenticated()" class="card create-form">
+    <h2>Crear Evento</h2>
+    <div class="form-grid">
+      <label>Título *<input [(ngModel)]="newEvent.title" placeholder="Min 5 caracteres"></label>
+      <label>Tipo *
+        <select [(ngModel)]="newEvent.type">
+          <option value="Conferencia">Conferencia</option>
+          <option value="Taller">Taller</option>
+          <option value="Concierto">Concierto</option>
+        </select>
+      </label>
+      <label>Venue *
+        <select [(ngModel)]="newEvent.venueId">
+          <option *ngFor="let v of venues" [value]="v.id">{{ v.name }} (cap: {{ v.capacity }})</option>
+        </select>
+      </label>
+      <label>Capacidad Máxima *<input type="number" [(ngModel)]="newEvent.maxCapacity" min="1"></label>
+      <label>Precio *<input type="number" [(ngModel)]="newEvent.ticketPrice" step="0.01" min="0"></label>
+      <label>Inicio *<input type="datetime-local" [(ngModel)]="newEvent.startDateTime"></label>
+      <label>Fin *<input type="datetime-local" [(ngModel)]="newEvent.endDateTime"></label>
+    </div>
+    <label class="full-width">Descripción *
+      <textarea [(ngModel)]="newEvent.description" rows="3" placeholder="Min 10 caracteres"></textarea>
+    </label>
+    <button (click)="createEvent()" [disabled]="creating">{{ creating ? 'Creando...' : 'Crear Evento' }}</button>
+    <div *ngIf="createError" class="error">{{ createError }}</div>
+    <div *ngIf="createSuccess" class="success">{{ createSuccess }}</div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card filters">
+    <h2>Filtros</h2>
+    <div class="form-grid">
+      <label>Título<input [(ngModel)]="filters.titleSearch" placeholder="Buscar..."></label>
+      <label>Tipo
+        <select [(ngModel)]="filters.type">
+          <option value="">Todos</option>
+          <option value="Conferencia">Conferencia</option>
+          <option value="Taller">Taller</option>
+          <option value="Concierto">Concierto</option>
+        </select>
+      </label>
+      <label>Estado
+        <select [(ngModel)]="filters.status">
+          <option value="">Todos</option>
+          <option value="Activo">Activo</option>
+          <option value="Cancelado">Cancelado</option>
+          <option value="Completado">Completado</option>
+        </select>
+      </label>
+      <label>Venue
+        <select [(ngModel)]="filters.venueId">
+          <option value="">Todos</option>
+          <option *ngFor="let v of venues" [value]="v.id">{{ v.name }}</option>
+        </select>
+      </label>
+      <label>Desde<input type="date" [(ngModel)]="filters.startFrom"></label>
+      <label>Hasta<input type="date" [(ngModel)]="filters.startTo"></label>
+    </div>
+    <button (click)="loadEvents()">Buscar</button>
+    <button class="secondary" (click)="clearFilters()">Limpiar</button>
+  </div>
+
+  <!-- Events List -->
+  <div *ngIf="loading" class="loading">Cargando...</div>
+  <div *ngIf="error" class="error card">{{ error }}</div>
+
+  <div *ngIf="!loading && events.length === 0 && !error" class="card">
+    <p>No se encontraron eventos.</p>
+  </div>
+
+  <div class="events-grid">
+    <div *ngFor="let event of events" class="event-card card">
+      <div class="event-header">
+        <h3>{{ event.title }}</h3>
+        <span class="badge" [class]="'status-' + event.status.toLowerCase()">{{ event.status }}</span>
+      </div>
+      <p class="description">{{ event.description }}</p>
+      <div class="event-meta">
+        <span>📍 {{ event.venueName }}</span>
+        <span>🎫 {{ event.type }}</span>
+        <span>💰 {{ event.ticketPrice | currency:'USD' }}</span>
+        <span>👥 Cap: {{ event.maxCapacity }}</span>
+      </div>
+      <div class="event-dates">
+        <span>📅 {{ event.startDateTime | date:'dd/MM/yyyy HH:mm' }}</span>
+        <span> → {{ event.endDateTime | date:'HH:mm' }}</span>
+      </div>
+      <div class="event-actions">
+        <button (click)="viewReport(event)">📊 Ver Reporte</button>
+        <button *ngIf="auth.isAuthenticated()" (click)="openReservation(event)">🎟 Reservar</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="page?.hasNextPage" class="pagination">
+    <button (click)="loadMore()">Cargar más</button>
+  </div>
+
+  <!-- Report Modal -->
+  <div *ngIf="selectedReport" class="modal-overlay" (click)="selectedReport = null">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Reporte: {{ selectedReport.title }}</h2>
+      <table>
+        <tr><td>Entradas confirmadas</td><td>{{ selectedReport.confirmedTickets }}</td></tr>
+        <tr><td>Entradas disponibles</td><td>{{ selectedReport.availableTickets }}</td></tr>
+        <tr><td>Entradas perdidas</td><td>{{ selectedReport.lostTickets }}</td></tr>
+        <tr><td>Ocupación</td><td>{{ selectedReport.occupancyPercentage }}%</td></tr>
+        <tr><td>Ingresos totales</td><td>{{ selectedReport.totalRevenue | currency:'USD' }}</td></tr>
+        <tr><td>Estado</td><td>{{ selectedReport.status }}</td></tr>
+      </table>
+      <button (click)="selectedReport = null">Cerrar</button>
+    </div>
+  </div>
+
+  <!-- Reservation Modal -->
+  <div *ngIf="selectedEvent" class="modal-overlay" (click)="selectedEvent = null">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <h2>Reservar: {{ selectedEvent.title }}</h2>
+      <label>Nombre *<input [(ngModel)]="reservation.buyerName"></label>
+      <label>Email *<input type="email" [(ngModel)]="reservation.buyerEmail"></label>
+      <label>Cantidad *<input type="number" [(ngModel)]="reservation.quantity" min="1"></label>
+      <button (click)="submitReservation()" [disabled]="reserving">
+        {{ reserving ? 'Reservando...' : 'Confirmar Reserva' }}
+      </button>
+      <div *ngIf="reservationError" class="error">{{ reservationError }}</div>
+      <div *ngIf="reservationSuccess" class="success">
+        {{ reservationSuccess }}<br>
+        <small>ID: {{ lastReservationId }}</small><br>
+        <button (click)="confirmPayment()" [disabled]="confirming">
+          {{ confirming ? 'Confirmando pago...' : '✅ Confirmar Pago' }}
+        </button>
+        <div *ngIf="paymentResult" class="success">
+          Código: {{ paymentResult.reservationCode }}
+        </div>
+      </div>
+      <button class="secondary" (click)="selectedEvent = null">Cerrar</button>
+    </div>
+  </div>
+</div>
