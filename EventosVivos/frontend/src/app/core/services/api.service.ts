@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   Venue, EventDto, CreateEventRequest, CursorPage,
-  CreateReservationRequest, Reservation, ConfirmPaymentResult,
-  CancelReservationResult, OccupancyReport
+  CreateReservationRequest, Reservation, ReservationDetail,
+  ConfirmPaymentResult, CancelReservationResult, OccupancyReport
 } from '../models/models';
 import { environment } from '../../../environments/environment';
 
@@ -42,6 +42,10 @@ export class ApiService {
   }
 
   // Reservations
+  getReservation(reservationId: string) {
+    return this.http.get<ReservationDetail>(`${this.base}/reservations/${reservationId}`);
+  }
+
   createReservation(data: CreateReservationRequest) {
     return this.http.post<Reservation>(`${this.base}/reservations`, data);
   }

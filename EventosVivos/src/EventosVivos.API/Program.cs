@@ -33,6 +33,7 @@ try
     var jwtSettings = builder.Configuration.GetSection("JwtSettings").Get<JwtSettings>()!;
     builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
     builder.Services.Configure<OAuthSettings>(builder.Configuration.GetSection("OAuth"));
+    builder.Services.Configure<BusinessSettings>(builder.Configuration.GetSection("Business"));
 
     // Authentication & Authorization
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

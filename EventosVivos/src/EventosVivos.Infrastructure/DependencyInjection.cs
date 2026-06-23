@@ -1,6 +1,8 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Interfaces;
 using EventosVivos.Infrastructure.Persistence;
 using EventosVivos.Infrastructure.Persistence.Repositories;
+using EventosVivos.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +20,8 @@ public static class DependencyInjection
         services.AddScoped<IEventRepository, EventRepository>();
         services.AddScoped<IReservationRepository, ReservationRepository>();
         services.AddScoped<IIdempotencyRepository, IdempotencyRepository>();
+
+        services.AddSingleton<IBusinessClock, BusinessClock>();
 
         return services;
     }

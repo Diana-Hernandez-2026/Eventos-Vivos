@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Entities;
 using EventosVivos.Domain.Exceptions;
 using EventosVivos.Domain.Interfaces;
@@ -7,7 +8,8 @@ namespace EventosVivos.Application.Events.Commands.CreateEvent;
 
 public class CreateEventCommandHandler(
     IEventRepository eventRepo,
-    IVenueRepository venueRepo) : IRequestHandler<CreateEventCommand, CreateEventResult>
+    IVenueRepository venueRepo,
+    IBusinessClock clock) : IRequestHandler<CreateEventCommand, CreateEventResult>
 {
     public async Task<CreateEventResult> Handle(CreateEventCommand cmd, CancellationToken ct)
     {
@@ -23,10 +25,10 @@ public class CreateEventCommandHandler(
         if (hasOverlap)
             throw new DomainException("Another active event at this venue overlaps the requested time slot.");
 
-        // RN-03: weekends cannot start after 22:00
-        var localStart = cmd.StartDateTime;
+        // RN-03: weekends cannot start at or after 22:00 (evaluated in business local time)
+        var localStart = clock.ToBusinessLocal(cmd.StartDateTime);
         if (localStart.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday && localStart.Hour >= 22)
-            throw new DomainException("Events on weekends cannot start at or after 22:00.");
+            throw new DomainException("Los eventos en fin de semana no pueden iniciar a las 22:00 o después.");
 
         var evt = new Event
         {

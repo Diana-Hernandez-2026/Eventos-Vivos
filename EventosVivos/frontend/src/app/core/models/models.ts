@@ -63,6 +63,21 @@ export interface CancelReservationResult {
   cancelledAt: string;
 }
 
+export interface ReservationDetail {
+  id: string;
+  eventId: string;
+  eventTitle: string;
+  eventStartDateTime: string;
+  status: string;
+  quantity: number;
+  buyerName: string;
+  buyerEmail: string;
+  reservationCode: string | null;
+  isLost: boolean;
+  createdAt: string;
+  cancelledAt: string | null;
+}
+
 export interface OccupancyReport {
   eventId: string;
   title: string;

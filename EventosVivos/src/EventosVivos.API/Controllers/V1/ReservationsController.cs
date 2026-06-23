@@ -2,6 +2,7 @@ using Asp.Versioning;
 using EventosVivos.Application.Reservations.Commands.CancelReservation;
 using EventosVivos.Application.Reservations.Commands.ConfirmPayment;
 using EventosVivos.Application.Reservations.Commands.CreateReservation;
+using EventosVivos.Application.Reservations.Queries.GetReservation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,6 +18,13 @@ namespace EventosVivos.API.Controllers.V1;
 [EnableRateLimiting(RateLimitPolicies.Api)]
 public class ReservationsController(IMediator mediator) : ControllerBase
 {
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetReservation(Guid id, CancellationToken ct)
+    {
+        var result = await mediator.Send(new GetReservationQuery(id), ct);
+        return Ok(result);
+    }
+
     [HttpPost]
     public async Task<IActionResult> CreateReservation([FromBody] CreateReservationCommand command, CancellationToken ct)
     {
