@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Application.Events.Commands.CreateEvent;
 using EventosVivos.Domain.Enums;
 using EventosVivos.Domain.Exceptions;
@@ -13,12 +14,19 @@ public class CreateEventTests : IDisposable
     private readonly AppDbContext _db;
     private readonly CreateEventCommandHandler _handler;
 
+    // Stub that treats UTC as business-local time (no offset), keeping tests timezone-agnostic.
+    private sealed class UtcClock : IBusinessClock
+    {
+        public DateTime ToBusinessLocal(DateTime utcDateTime) => utcDateTime;
+    }
+
     public CreateEventTests()
     {
         _db = TestDbContextFactory.Create();
         _handler = new CreateEventCommandHandler(
             new EventRepository(_db),
-            new VenueRepository(_db));
+            new VenueRepository(_db),
+            new UtcClock());
     }
 
     private static CreateEventCommand ValidCommand(int venueId = 1) => new(

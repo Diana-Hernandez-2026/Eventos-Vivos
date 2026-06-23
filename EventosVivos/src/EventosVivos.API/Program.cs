@@ -2,6 +2,7 @@ using Asp.Versioning;
 using EventosVivos.API.Configuration;
 using EventosVivos.API.Middleware;
 using EventosVivos.Application;
+using EventosVivos.Application.Common;
 using EventosVivos.Infrastructure;
 using EventosVivos.Infrastructure.Persistence;
 using EventosVivos.Infrastructure.Persistence.Seeding;
