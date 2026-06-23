@@ -9,14 +9,12 @@ services:
       - eventosvivos_data:/app/data
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Override JWT secret — do NOT commit a real secret here; use a .env file instead
-      JwtSettings__Secret: "REPLACE_WITH_A_SECURE_SECRET_AT_LEAST_32_CHARS_LONG"
+      JwtSettings__Secret: "${JWT_SECRET}"
       JwtSettings__Issuer: EventosVivos
       JwtSettings__Audience: EventosVivosClients
-      # Microsoft OAuth — fill in from Azure AD app registration
-      OAuth__Microsoft__ClientId: ""
-      OAuth__Microsoft__ClientSecret: ""
-      OAuth__Microsoft__TenantId: organizations
+      OAuth__Microsoft__ClientId: "${MICROSOFT_CLIENT_ID}"
+      OAuth__Microsoft__ClientSecret: "${MICROSOFT_CLIENT_SECRET}"
+      OAuth__Microsoft__TenantId: "${MICROSOFT_TENANT_ID}"
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/swagger/v1/swagger.json > /dev/null 2>&1 || exit 1"]
