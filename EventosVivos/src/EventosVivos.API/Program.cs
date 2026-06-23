@@ -197,7 +197,15 @@ try
         c.DisplayRequestDuration();
     });
 
+    // Serve Angular SPA from wwwroot (populated by Dockerfile's frontend-build stage)
+    app.UseDefaultFiles();   // maps / → /index.html
+    app.UseStaticFiles();    // serves JS/CSS/assets from wwwroot
+
     app.MapControllers();
+
+    // Any route not matched by the API falls back to Angular's index.html
+    // so the Angular Router can handle client-side navigation
+    app.MapFallbackToFile("index.html");
 
     logger.Info("EventosVivos API starting up");
     app.Run();
