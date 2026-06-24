@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Enums;
 using EventosVivos.Domain.Exceptions;
 using EventosVivos.Domain.Interfaces;
@@ -15,10 +16,10 @@ public class CancelReservationCommandHandler(
             ?? throw new NotFoundException("Reservation", cmd.ReservationId);
 
         if (reservation.Status == ReservationStatus.Cancelada)
-            throw new ConflictException("Reservation is already cancelled.");
+            throw new ConflictException(I18n.AlreadyCancelled);
 
         if (reservation.Status == ReservationStatus.PendientePago)
-            throw new DomainException("Cannot cancel a reservation with status 'pendiente_pago'. Only confirmed reservations can be cancelled.");
+            throw new DomainException(I18n.CannotCancelPending);
 
         var evt = await eventRepo.GetByIdAsync(reservation.EventId, ct)
             ?? throw new NotFoundException("Event", reservation.EventId);

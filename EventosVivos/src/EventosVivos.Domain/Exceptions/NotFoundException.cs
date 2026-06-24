@@ -1,7 +1,8 @@
 namespace EventosVivos.Domain.Exceptions;
 
-public class NotFoundException : Exception
+public class NotFoundException(string entityName, object key)
+    : Exception($"{entityName} with key '{key}' was not found.")
 {
-    public NotFoundException(string entityName, object key)
-        : base($"{entityName} with key '{key}' was not found.") { }
+    public string EntityName { get; } = entityName;
+    public object EntityKey  { get; } = key;
 }

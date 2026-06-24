@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { ApiService } from '../../core/services/api.service';
 import { ReservationDetail, ConfirmPaymentResult, CancelReservationResult } from '../../core/models/models';
 
 @Component({
   selector: 'app-reservations',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   templateUrl: './reservations.component.html',
   styleUrls: ['./reservations.component.css'],
 })
@@ -19,7 +20,7 @@ export class ReservationsComponent {
   error = '';
   loading = false;
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService, private translate: TranslateService) {}
 
   search() {
     if (!this.reservationId.trim()) return;
@@ -33,11 +34,9 @@ export class ReservationsComponent {
       next: r => { this.reservation = r; this.loading = false; },
       error: e => {
         this.loading = false;
-        if (e.status === 404) {
-          this.error = `No se encontró ninguna reserva con el ID proporcionado. Verifica que el ID sea correcto.`;
-        } else {
-          this.error = e.error?.detail || e.error?.title || 'Error al buscar la reserva.';
-        }
+        this.error = e.status === 404
+          ? this.translate.instant('reservations.errors.notFound')
+          : e.error?.detail || e.error?.title || this.translate.instant('reservations.errors.searchFailed');
       }
     });
   }
@@ -55,7 +54,7 @@ export class ReservationsComponent {
       },
       error: e => {
         this.loading = false;
-        this.error = e.error?.detail || e.error?.title || 'Error al confirmar el pago.';
+        this.error = e.error?.detail || e.error?.title || this.translate.instant('reservations.errors.confirmFailed');
       }
     });
   }
@@ -73,16 +72,11 @@ export class ReservationsComponent {
       },
       error: e => {
         this.loading = false;
-        this.error = e.error?.detail || e.error?.title || 'Error al cancelar la reserva.';
+        this.error = e.error?.detail || e.error?.title || this.translate.instant('reservations.errors.cancelFailed');
       }
     });
   }
 
-  get canConfirm(): boolean {
-    return this.reservation?.status === 'PendientePago';
-  }
-
-  get canCancel(): boolean {
-    return this.reservation?.status === 'Confirmada';
-  }
+  get canConfirm(): boolean { return this.reservation?.status === 'PendientePago'; }
+  get canCancel():  boolean { return this.reservation?.status === 'Confirmada'; }
 }

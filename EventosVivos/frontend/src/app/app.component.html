@@ -1,9 +1,10 @@
 <nav>
-  <div class="nav-brand">EventosVivos</div>
+  <div class="nav-brand">{{ 'nav.brand' | translate }}</div>
   <div class="nav-links">
-    <a routerLink="/events" routerLinkActive="active">Eventos</a>
-    <a routerLink="/reservations" routerLinkActive="active">Reservas</a>
-    <span *ngIf="auth.isAuthenticated()" class="auth-badge">✓ Autenticado</span>
+    <a routerLink="/events" routerLinkActive="active">{{ 'nav.events' | translate }}</a>
+    <a routerLink="/reservations" routerLinkActive="active">{{ 'nav.reservations' | translate }}</a>
+    <span *ngIf="auth.isAuthenticated()" class="auth-badge">{{ 'nav.authenticated' | translate }}</span>
+    <app-language-switcher />
   </div>
 </nav>
 <main>

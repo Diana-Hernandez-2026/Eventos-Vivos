@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
@@ -24,12 +25,12 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
     {
         var (statusCode, title) = exception switch
         {
-            ValidationException => (HttpStatusCode.BadRequest, "Validation Error"),
-            NotFoundException => (HttpStatusCode.NotFound, "Not Found"),
-            DomainException => (HttpStatusCode.UnprocessableEntity, "Business Rule Violation"),
-            ConflictException => (HttpStatusCode.Conflict, "Conflict"),
-            UnauthorizedAccessException => (HttpStatusCode.Unauthorized, "Unauthorized"),
-            _ => (HttpStatusCode.InternalServerError, "Internal Server Error")
+            ValidationException       => (HttpStatusCode.BadRequest,            I18n.TitleValidation),
+            NotFoundException         => (HttpStatusCode.NotFound,              I18n.TitleNotFound),
+            DomainException           => (HttpStatusCode.UnprocessableEntity,   I18n.TitleDomain),
+            ConflictException         => (HttpStatusCode.Conflict,              I18n.TitleConflict),
+            UnauthorizedAccessException => (HttpStatusCode.Unauthorized,        I18n.TitleUnauthorized),
+            _                         => (HttpStatusCode.InternalServerError,   I18n.TitleInternal)
         };
 
         logger.LogError(exception, "Unhandled exception: {Message}", exception.Message);
@@ -37,8 +38,8 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
         var problem = new ProblemDetails
         {
             Status = (int)statusCode,
-            Title = title,
-            Type = $"https://httpstatuses.io/{(int)statusCode}"
+            Title  = title,
+            Type   = $"https://httpstatuses.io/{(int)statusCode}"
         };
 
         if (exception is ValidationException validationEx)
@@ -47,6 +48,10 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
         }
+        else if (exception is NotFoundException notFoundEx)
+        {
+            problem.Detail = I18n.NotFoundEntity(notFoundEx.EntityName, notFoundEx.EntityKey);
+        }
         else
         {
             problem.Detail = exception.Message;
@@ -54,11 +59,11 @@ public class ExceptionHandlingMiddleware(RequestDelegate next, ILogger<Exception
 
         if (env.IsDevelopment())
         {
-            problem.Extensions["stackTrace"] = exception.StackTrace;
+            problem.Extensions["stackTrace"]    = exception.StackTrace;
             problem.Extensions["exceptionType"] = exception.GetType().FullName;
         }
 
-        context.Response.StatusCode = (int)statusCode;
+        context.Response.StatusCode  = (int)statusCode;
         context.Response.ContentType = "application/problem+json";
 
         await context.Response.WriteAsync(JsonSerializer.Serialize(problem, new JsonSerializerOptions

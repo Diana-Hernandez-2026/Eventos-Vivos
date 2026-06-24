@@ -1,0 +1,152 @@
+{
+  "nav": {
+    "brand": "EventosVivos",
+    "events": "Eventos",
+    "reservations": "Reservas",
+    "authenticated": "✓ Autenticado"
+  },
+  "login": {
+    "title": "EventosVivos",
+    "subtitle": "Sistema de Gestão de Eventos",
+    "microsoft": "Continuar com Microsoft",
+    "or": "ou",
+    "guest": "Continuar como visitante",
+    "guestNote": "Visitantes podem ver eventos mas não podem fazer reservas."
+  },
+  "events": {
+    "title": "EventosVivos",
+    "createToggle": "+ Criar Evento",
+    "cancelToggle": "Cancelar",
+    "logout": "Sair",
+    "login": "Entrar",
+    "loading": "Carregando...",
+    "empty": "Nenhum evento encontrado.",
+    "loadMore": "Carregar mais",
+    "loadError": "Erro ao carregar eventos",
+    "form": {
+      "heading": "Criar Evento",
+      "title": "Título *",
+      "titlePlaceholder": "Mín. 5 caracteres",
+      "type": "Tipo *",
+      "venue": "Venue *",
+      "capacity": "cap:",
+      "maxCapacity": "Capacidade Máxima *",
+      "price": "Preço *",
+      "start": "Início *",
+      "end": "Fim *",
+      "description": "Descrição *",
+      "descriptionPlaceholder": "Mín. 10 caracteres",
+      "creating": "Criando...",
+      "submit": "Criar Evento",
+      "success": "Evento \"{{title}}\" criado com sucesso."
+    },
+    "types": {
+      "Conferencia": "Conferência",
+      "Taller": "Oficina",
+      "Concierto": "Concerto"
+    },
+    "status": {
+      "Activo": "Ativo",
+      "Cancelado": "Cancelado",
+      "Completado": "Concluído"
+    },
+    "filters": {
+      "heading": "Filtros",
+      "search": "Buscar por título",
+      "searchPlaceholder": "Ex: concerto, oficina...",
+      "type": "Tipo",
+      "all": "Todos",
+      "status": "Estado",
+      "venue": "Venue",
+      "from": "De",
+      "to": "Até",
+      "apply": "Buscar",
+      "clear": "Limpar"
+    },
+    "card": {
+      "capacity": "👥 Cap:",
+      "report": "📊 Ver Relatório",
+      "reserve": "🎟 Reservar"
+    },
+    "report": {
+      "title": "Relatório:",
+      "confirmed": "Ingressos confirmados",
+      "available": "Ingressos disponíveis",
+      "lost": "Ingressos perdidos",
+      "occupancy": "Ocupação",
+      "revenue": "Receita total",
+      "status": "Estado",
+      "close": "Fechar"
+    },
+    "reservation": {
+      "title": "Reservar:",
+      "name": "Nome *",
+      "email": "Email *",
+      "quantity": "Quantidade *",
+      "submitting": "Reservando...",
+      "submit": "Confirmar Reserva",
+      "success": "Reserva criada. Estado: PagamentoPendente",
+      "reservationId": "ID:",
+      "confirming": "Confirmando pagamento...",
+      "confirmPayment": "✅ Confirmar Pagamento",
+      "code": "Código:",
+      "close": "Fechar"
+    }
+  },
+  "reservations": {
+    "heading": "Gestão de Reservas",
+    "searchHeading": "Buscar Reserva por ID",
+    "placeholder": "UUID da reserva...",
+    "search": "🔍 Buscar",
+    "loading": "Carregando...",
+    "fields": {
+      "event": "Evento",
+      "buyer": "Comprador",
+      "tickets": "Ingressos",
+      "code": "Código",
+      "created": "Criada",
+      "cancelled": "Cancelada",
+      "penalty": "Penalidade",
+      "penaltyNote": "Ingressos marcados como perdidos (cancelamento < 48h)"
+    },
+    "actions": {
+      "confirmPayment": "✅ Confirmar Pagamento",
+      "cancelReservation": "❌ Cancelar Reserva",
+      "hint": "Só é possível confirmar se o estado for PagamentoPendente, ou cancelar se for Confirmada."
+    },
+    "confirmResult": {
+      "heading": "✅ Pagamento confirmado",
+      "code": "Código da reserva:",
+      "status": "Estado:"
+    },
+    "cancelResult": {
+      "penaltyHeading": "⚠️ Reserva cancelada com penalidade",
+      "successHeading": "✅ Reserva cancelada",
+      "penaltyNote": "O cancelamento foi feito com menos de 48 horas antes do evento. Os ingressos foram marcados como perdidos e não são reembolsáveis.",
+      "successNote": "A reserva foi cancelada com sucesso sem penalidade.",
+      "finalStatus": "Estado final:"
+    },
+    "errors": {
+      "notFound": "Nenhuma reserva encontrada com o ID fornecido. Verifique se o ID está correto.",
+      "searchFailed": "Erro ao buscar a reserva.",
+      "confirmFailed": "Erro ao confirmar o pagamento.",
+      "cancelFailed": "Erro ao cancelar a reserva."
+    }
+  },
+  "auth": {
+    "loading": "Autenticando, por favor aguarde...",
+    "backToLogin": "Voltar ao início",
+    "errors": {
+      "providerRejected": "O provedor rejeitou o acesso: {{detail}}",
+      "invalidResponse": "Resposta de autenticação inválida.",
+      "failed": "Não foi possível concluir a autenticação: {{detail}}",
+      "security": "Erro de segurança durante o processo de autenticação."
+    }
+  },
+  "lang": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "English",
+    "pt": "Português"
+  }
+}

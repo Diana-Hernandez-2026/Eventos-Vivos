@@ -1,24 +1,24 @@
 <div class="login-container">
   <div class="login-card">
     <div class="logo">🎭</div>
-    <h1>EventosVivos</h1>
-    <p class="subtitle">Sistema de Gestión de Eventos</p>
+    <h1>{{ 'login.title' | translate }}</h1>
+    <p class="subtitle">{{ 'login.subtitle' | translate }}</p>
 
     <button class="btn-microsoft" (click)="loginWithMicrosoft()">
       <svg width="20" height="20" viewBox="0 0 21 21">
-        <rect x="1" y="1" width="9" height="9" fill="#F25022" />
-        <rect x="11" y="1" width="9" height="9" fill="#7FBA00" />
-        <rect x="1" y="11" width="9" height="9" fill="#00A4EF" />
+        <rect x="1"  y="1"  width="9" height="9" fill="#F25022" />
+        <rect x="11" y="1"  width="9" height="9" fill="#7FBA00" />
+        <rect x="1"  y="11" width="9" height="9" fill="#00A4EF" />
         <rect x="11" y="11" width="9" height="9" fill="#FFB900" />
       </svg>
-      Continuar con Microsoft
+      {{ 'login.microsoft' | translate }}
     </button>
 
-    <div class="divider"><span>o</span></div>
+    <div class="divider"><span>{{ 'login.or' | translate }}</span></div>
 
     <button class="btn-guest" (click)="continueAsGuest()">
-      Continuar como visitante
+      {{ 'login.guest' | translate }}
     </button>
-    <p class="guest-note">Los visitantes pueden ver eventos pero no realizar reservas.</p>
+    <p class="guest-note">{{ 'login.guestNote' | translate }}</p>
   </div>
 </div>

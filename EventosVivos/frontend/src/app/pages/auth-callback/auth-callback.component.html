@@ -3,6 +3,6 @@
     <div *ngIf="!error" class="spinner"></div>
     <div *ngIf="error" class="error-icon">⚠️</div>
     <p>{{ message }}</p>
-    <button *ngIf="error" (click)="goToLogin()">Volver al inicio</button>
+    <button *ngIf="error" (click)="goToLogin()">{{ 'auth.backToLogin' | translate }}</button>
   </div>
 </div>

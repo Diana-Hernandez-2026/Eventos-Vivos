@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Enums;
 using EventosVivos.Domain.Exceptions;
 using EventosVivos.Domain.Interfaces;
@@ -14,10 +15,10 @@ public class ConfirmPaymentCommandHandler(IReservationRepository reservationRepo
             ?? throw new NotFoundException("Reservation", cmd.ReservationId);
 
         if (reservation.Status == ReservationStatus.Confirmada)
-            throw new ConflictException("Reservation is already confirmed.");
+            throw new ConflictException(I18n.AlreadyConfirmed);
 
         if (reservation.Status == ReservationStatus.Cancelada)
-            throw new DomainException("Cannot confirm a cancelled reservation.");
+            throw new DomainException(I18n.CannotConfirmCancelled);
 
         reservation.Status = ReservationStatus.Confirmada;
         reservation.ReservationCode = await GenerateUniqueCodeAsync(reservationRepo, ct);

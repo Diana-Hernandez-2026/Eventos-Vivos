@@ -18,18 +18,18 @@ public class CreateEventCommandHandler(
 
         // RN-01: capacity cannot exceed venue capacity
         if (cmd.MaxCapacity > venue.Capacity)
-            throw new DomainException($"MaxCapacity ({cmd.MaxCapacity}) exceeds venue capacity ({venue.Capacity}).");
+            throw new DomainException(I18n.Rn01(cmd.MaxCapacity, venue.Capacity));
 
         // RN-02: no overlapping events at same venue
         var hasOverlap = await eventRepo.HasVenueOverlapAsync(cmd.VenueId, cmd.StartDateTime, cmd.EndDateTime, null, ct);
         if (hasOverlap)
-            throw new DomainException("Another active event at this venue overlaps the requested time slot.");
+            throw new DomainException(I18n.Rn02);
 
         // RN-03: weekend events cannot start strictly after 22:00 (22:00 itself is allowed)
         var localStart = clock.ToBusinessLocal(cmd.StartDateTime);
         if (localStart.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday
             && localStart.TimeOfDay > TimeSpan.FromHours(22))
-            throw new DomainException("Los eventos en fin de semana no pueden iniciar después de las 22:00.");
+            throw new DomainException(I18n.Rn03);
 
         var evt = new Event
         {

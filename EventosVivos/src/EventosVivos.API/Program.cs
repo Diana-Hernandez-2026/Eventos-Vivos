@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using System.Globalization;
 using EventosVivos.API.Configuration;
 using EventosVivos.API.Middleware;
 using EventosVivos.Application;
@@ -180,6 +181,16 @@ try
 
     // Middleware pipeline
     app.UseCors(corsPolicy);  // must be first so all responses carry CORS headers
+
+    var supportedCultures = new[] { "en", "es", "pt" }
+        .Select(c => new CultureInfo(c)).ToArray();
+    app.UseRequestLocalization(new RequestLocalizationOptions
+    {
+        DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture("en"),
+        SupportedCultures     = supportedCultures,
+        SupportedUICultures   = supportedCultures
+    });
+
     app.UseRateLimiter();
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();

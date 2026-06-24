@@ -1,153 +1,195 @@
 <div class="page">
   <header>
-    <h1>EventosVivos</h1>
+    <h1>{{ 'events.title' | translate }}</h1>
     <div class="header-actions">
       <button *ngIf="auth.isAuthenticated()" (click)="showCreate = !showCreate">
-        {{ showCreate ? 'Cancelar' : '+ Crear Evento' }}
+        {{ (showCreate ? 'events.cancelToggle' : 'events.createToggle') | translate }}
       </button>
-      <button *ngIf="auth.isAuthenticated()" class="secondary" (click)="auth.logout()">Cerrar sesión</button>
-      <button *ngIf="!auth.isAuthenticated()" class="secondary" (click)="router.navigate(['/login'])">Iniciar sesión</button>
+      <button *ngIf="auth.isAuthenticated()" class="secondary" (click)="auth.logout()">
+        {{ 'events.logout' | translate }}
+      </button>
+      <button *ngIf="!auth.isAuthenticated()" class="secondary" (click)="router.navigate(['/login'])">
+        {{ 'events.login' | translate }}
+      </button>
     </div>
   </header>
 
   <!-- Create Event Form -->
   <div *ngIf="showCreate && auth.isAuthenticated()" class="card create-form">
-    <h2>Crear Evento</h2>
+    <h2>{{ 'events.form.heading' | translate }}</h2>
     <div class="form-grid">
-      <label>Título *<input [(ngModel)]="newEvent.title" placeholder="Min 5 caracteres"></label>
-      <label>Tipo *
+      <label>{{ 'events.form.title' | translate }}
+        <input [(ngModel)]="newEvent.title" [placeholder]="'events.form.titlePlaceholder' | translate">
+      </label>
+      <label>{{ 'events.form.type' | translate }}
         <select [(ngModel)]="newEvent.type">
-          <option value="Conferencia">Conferencia</option>
-          <option value="Taller">Taller</option>
-          <option value="Concierto">Concierto</option>
+          <option value="Conferencia">{{ 'events.types.Conferencia' | translate }}</option>
+          <option value="Taller">{{ 'events.types.Taller' | translate }}</option>
+          <option value="Concierto">{{ 'events.types.Concierto' | translate }}</option>
         </select>
       </label>
-      <label>Venue *
+      <label>{{ 'events.form.venue' | translate }}
         <select [(ngModel)]="newEvent.venueId">
-          <option *ngFor="let v of venues" [value]="v.id">{{ v.name }} (cap: {{ v.capacity }})</option>
+          <option *ngFor="let v of venues" [value]="v.id">
+            {{ v.name }} ({{ 'events.form.capacity' | translate }} {{ v.capacity }})
+          </option>
         </select>
       </label>
-      <label>Capacidad Máxima *<input type="number" [(ngModel)]="newEvent.maxCapacity" min="1"></label>
-      <label>Precio *<input type="number" [(ngModel)]="newEvent.ticketPrice" step="0.01" min="0"></label>
-      <label>Inicio *<input type="datetime-local" [(ngModel)]="newEvent.startDateTime"></label>
-      <label>Fin *<input type="datetime-local" [(ngModel)]="newEvent.endDateTime"></label>
+      <label>{{ 'events.form.maxCapacity' | translate }}
+        <input type="number" [(ngModel)]="newEvent.maxCapacity" min="1">
+      </label>
+      <label>{{ 'events.form.price' | translate }}
+        <input type="number" [(ngModel)]="newEvent.ticketPrice" step="0.01" min="0">
+      </label>
+      <label>{{ 'events.form.start' | translate }}
+        <input type="datetime-local" [(ngModel)]="newEvent.startDateTime">
+      </label>
+      <label>{{ 'events.form.end' | translate }}
+        <input type="datetime-local" [(ngModel)]="newEvent.endDateTime">
+      </label>
     </div>
-    <label class="full-width">Descripción *
-      <textarea [(ngModel)]="newEvent.description" rows="3" placeholder="Min 10 caracteres"></textarea>
+    <label class="full-width">{{ 'events.form.description' | translate }}
+      <textarea [(ngModel)]="newEvent.description" rows="3"
+        [placeholder]="'events.form.descriptionPlaceholder' | translate"></textarea>
     </label>
-    <button (click)="createEvent()" [disabled]="creating">{{ creating ? 'Creando...' : 'Crear Evento' }}</button>
+    <button (click)="createEvent()" [disabled]="creating">
+      {{ (creating ? 'events.form.creating' : 'events.form.submit') | translate }}
+    </button>
     <div *ngIf="createError" class="error">{{ createError }}</div>
     <div *ngIf="createSuccess" class="success">{{ createSuccess }}</div>
   </div>
 
   <!-- Filters -->
   <div class="card filters">
-    <h2>Filtros</h2>
+    <h2>{{ 'events.filters.heading' | translate }}</h2>
+    <div class="form-group full">
+      <label>{{ 'events.filters.search' | translate }}</label>
+      <input [(ngModel)]="filters.titleSearch" [placeholder]="'events.filters.searchPlaceholder' | translate" />
+    </div>
     <div class="form-grid">
-      <label>Título<input [(ngModel)]="filters.titleSearch" placeholder="Buscar..."></label>
-      <label>Tipo
+      <div class="form-group">
+        <label>{{ 'events.filters.type' | translate }}</label>
         <select [(ngModel)]="filters.type">
-          <option value="">Todos</option>
-          <option value="Conferencia">Conferencia</option>
-          <option value="Taller">Taller</option>
-          <option value="Concierto">Concierto</option>
+          <option value="">{{ 'events.filters.all' | translate }}</option>
+          <option value="Conferencia">{{ 'events.types.Conferencia' | translate }}</option>
+          <option value="Taller">{{ 'events.types.Taller' | translate }}</option>
+          <option value="Concierto">{{ 'events.types.Concierto' | translate }}</option>
         </select>
-      </label>
-      <label>Estado
+      </div>
+      <div class="form-group">
+        <label>{{ 'events.filters.status' | translate }}</label>
         <select [(ngModel)]="filters.status">
-          <option value="">Todos</option>
-          <option value="Activo">Activo</option>
-          <option value="Cancelado">Cancelado</option>
-          <option value="Completado">Completado</option>
+          <option value="">{{ 'events.filters.all' | translate }}</option>
+          <option value="Activo">{{ 'events.status.Activo' | translate }}</option>
+          <option value="Cancelado">{{ 'events.status.Cancelado' | translate }}</option>
+          <option value="Completado">{{ 'events.status.Completado' | translate }}</option>
         </select>
-      </label>
-      <label>Venue
+      </div>
+      <div class="form-group">
+        <label>{{ 'events.filters.venue' | translate }}</label>
         <select [(ngModel)]="filters.venueId">
-          <option value="">Todos</option>
+          <option value="">{{ 'events.filters.all' | translate }}</option>
           <option *ngFor="let v of venues" [value]="v.id">{{ v.name }}</option>
         </select>
-      </label>
-      <label>Desde<input type="date" [(ngModel)]="filters.startFrom"></label>
-      <label>Hasta<input type="date" [(ngModel)]="filters.startTo"></label>
+      </div>
+      <div class="form-group">
+        <label>{{ 'events.filters.from' | translate }}</label>
+        <input type="date" [(ngModel)]="filters.startFrom" />
+      </div>
+      <div class="form-group">
+        <label>{{ 'events.filters.to' | translate }}</label>
+        <input type="date" [(ngModel)]="filters.startTo" />
+      </div>
     </div>
-    <button (click)="loadEvents()">Buscar</button>
-    <button class="secondary" (click)="clearFilters()">Limpiar</button>
+    <div class="actions">
+      <button (click)="loadEvents()">{{ 'events.filters.apply' | translate }}</button>
+      <button class="secondary" (click)="clearFilters()">{{ 'events.filters.clear' | translate }}</button>
+    </div>
   </div>
 
   <!-- Events List -->
-  <div *ngIf="loading" class="loading">Cargando...</div>
+  <div *ngIf="loading" class="loading">{{ 'events.loading' | translate }}</div>
   <div *ngIf="error" class="error card">{{ error }}</div>
-
   <div *ngIf="!loading && events.length === 0 && !error" class="card">
-    <p>No se encontraron eventos.</p>
+    <p>{{ 'events.empty' | translate }}</p>
   </div>
 
   <div class="events-grid">
     <div *ngFor="let event of events" class="event-card card">
       <div class="event-header">
         <h3>{{ event.title }}</h3>
-        <span class="badge" [class]="'status-' + event.status.toLowerCase()">{{ event.status }}</span>
+        <span class="badge" [class]="'status-' + event.status.toLowerCase()">
+          {{ ('events.status.' + event.status) | translate }}
+        </span>
       </div>
       <p class="description">{{ event.description }}</p>
       <div class="event-meta">
         <span>📍 {{ event.venueName }}</span>
-        <span>🎫 {{ event.type }}</span>
+        <span>🎫 {{ ('events.types.' + event.type) | translate }}</span>
         <span>💰 {{ event.ticketPrice | currency:'USD' }}</span>
-        <span>👥 Cap: {{ event.maxCapacity }}</span>
+        <span>{{ 'events.card.capacity' | translate }} {{ event.maxCapacity }}</span>
       </div>
       <div class="event-dates">
         <span>📅 {{ event.startDateTime | date:'dd/MM/yyyy HH:mm' }}</span>
         <span> → {{ event.endDateTime | date:'HH:mm' }}</span>
       </div>
       <div class="event-actions">
-        <button (click)="viewReport(event)">📊 Ver Reporte</button>
-        <button *ngIf="auth.isAuthenticated()" (click)="openReservation(event)">🎟 Reservar</button>
+        <button (click)="viewReport(event)">{{ 'events.card.report' | translate }}</button>
+        <button *ngIf="auth.isAuthenticated()" (click)="openReservation(event)">
+          {{ 'events.card.reserve' | translate }}
+        </button>
       </div>
     </div>
   </div>
 
   <div *ngIf="page?.hasNextPage" class="pagination">
-    <button (click)="loadMore()">Cargar más</button>
+    <button (click)="loadMore()">{{ 'events.loadMore' | translate }}</button>
   </div>
 
   <!-- Report Modal -->
   <div *ngIf="selectedReport" class="modal-overlay" (click)="selectedReport = null">
     <div class="modal" (click)="$event.stopPropagation()">
-      <h2>Reporte: {{ selectedReport.title }}</h2>
+      <h2>{{ 'events.report.title' | translate }} {{ selectedReport.title }}</h2>
       <table>
-        <tr><td>Entradas confirmadas</td><td>{{ selectedReport.confirmedTickets }}</td></tr>
-        <tr><td>Entradas disponibles</td><td>{{ selectedReport.availableTickets }}</td></tr>
-        <tr><td>Entradas perdidas</td><td>{{ selectedReport.lostTickets }}</td></tr>
-        <tr><td>Ocupación</td><td>{{ selectedReport.occupancyPercentage }}%</td></tr>
-        <tr><td>Ingresos totales</td><td>{{ selectedReport.totalRevenue | currency:'USD' }}</td></tr>
-        <tr><td>Estado</td><td>{{ selectedReport.status }}</td></tr>
+        <tr><td>{{ 'events.report.confirmed' | translate }}</td><td>{{ selectedReport.confirmedTickets }}</td></tr>
+        <tr><td>{{ 'events.report.available' | translate }}</td><td>{{ selectedReport.availableTickets }}</td></tr>
+        <tr><td>{{ 'events.report.lost' | translate }}</td>     <td>{{ selectedReport.lostTickets }}</td></tr>
+        <tr><td>{{ 'events.report.occupancy' | translate }}</td><td>{{ selectedReport.occupancyPercentage }}%</td></tr>
+        <tr><td>{{ 'events.report.revenue' | translate }}</td>  <td>{{ selectedReport.totalRevenue | currency:'USD' }}</td></tr>
+        <tr><td>{{ 'events.report.status' | translate }}</td>   <td>{{ selectedReport.status }}</td></tr>
       </table>
-      <button (click)="selectedReport = null">Cerrar</button>
+      <button (click)="selectedReport = null">{{ 'events.report.close' | translate }}</button>
     </div>
   </div>
 
   <!-- Reservation Modal -->
   <div *ngIf="selectedEvent" class="modal-overlay" (click)="selectedEvent = null">
     <div class="modal" (click)="$event.stopPropagation()">
-      <h2>Reservar: {{ selectedEvent.title }}</h2>
-      <label>Nombre *<input [(ngModel)]="reservation.buyerName"></label>
-      <label>Email *<input type="email" [(ngModel)]="reservation.buyerEmail"></label>
-      <label>Cantidad *<input type="number" [(ngModel)]="reservation.quantity" min="1"></label>
+      <h2>{{ 'events.reservation.title' | translate }} {{ selectedEvent.title }}</h2>
+      <label>{{ 'events.reservation.name' | translate }}
+        <input [(ngModel)]="reservation.buyerName">
+      </label>
+      <label>{{ 'events.reservation.email' | translate }}
+        <input type="email" [(ngModel)]="reservation.buyerEmail">
+      </label>
+      <label>{{ 'events.reservation.quantity' | translate }}
+        <input type="number" [(ngModel)]="reservation.quantity" min="1">
+      </label>
       <button (click)="submitReservation()" [disabled]="reserving">
-        {{ reserving ? 'Reservando...' : 'Confirmar Reserva' }}
+        {{ (reserving ? 'events.reservation.submitting' : 'events.reservation.submit') | translate }}
       </button>
       <div *ngIf="reservationError" class="error">{{ reservationError }}</div>
       <div *ngIf="reservationSuccess" class="success">
         {{ reservationSuccess }}<br>
-        <small>ID: {{ lastReservationId }}</small><br>
+        <small>{{ 'events.reservation.reservationId' | translate }} {{ lastReservationId }}</small><br>
         <button (click)="confirmPayment()" [disabled]="confirming">
-          {{ confirming ? 'Confirmando pago...' : '✅ Confirmar Pago' }}
+          {{ (confirming ? 'events.reservation.confirming' : 'events.reservation.confirmPayment') | translate }}
         </button>
         <div *ngIf="paymentResult" class="success">
-          Código: {{ paymentResult.reservationCode }}
+          {{ 'events.reservation.code' | translate }} {{ paymentResult.reservationCode }}
         </div>
       </div>
-      <button class="secondary" (click)="selectedEvent = null">Cerrar</button>
+      <button class="secondary" (click)="selectedEvent = null">{{ 'events.reservation.close' | translate }}</button>
     </div>
   </div>
 </div>

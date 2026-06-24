@@ -1,3 +1,4 @@
+using EventosVivos.Application.Common;
 using EventosVivos.Domain.Entities;
 using EventosVivos.Domain.Exceptions;
 using EventosVivos.Domain.Interfaces;
@@ -15,13 +16,13 @@ public class CreateReservationCommandHandler(
             ?? throw new NotFoundException("Event", cmd.EventId);
 
         if (!evt.IsActive)
-            throw new DomainException($"Cannot reserve tickets for an event with status '{evt.Status}'.");
+            throw new DomainException(I18n.Rn04Status(evt.Status.ToString()));
 
         var hoursUntilStart = (evt.StartDateTime - DateTime.UtcNow).TotalHours;
 
         // RN-04: no reservations within 1 hour of start
         if (hoursUntilStart < 1)
-            throw new DomainException("Reservations are not allowed for events starting in less than 1 hour.");
+            throw new DomainException(I18n.Rn04Time);
 
         // RN-03 for reservations: determine max quantity
         // RF-03 rule: <24h → max 5, takes priority over RN-05
@@ -41,12 +42,12 @@ public class CreateReservationCommandHandler(
         }
 
         if (cmd.Quantity > maxAllowed)
-            throw new DomainException($"Maximum {maxAllowed} tickets allowed per transaction for this event.");
+            throw new DomainException(I18n.Rn05Max(maxAllowed));
 
         // Check available tickets
         var available = evt.AvailableTickets;
         if (cmd.Quantity > available)
-            throw new DomainException($"Only {available} tickets available.");
+            throw new DomainException(I18n.Rn05Available(available));
 
         var reservation = new Reservation
         {

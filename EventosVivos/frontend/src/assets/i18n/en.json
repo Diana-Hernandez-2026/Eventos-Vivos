@@ -1,0 +1,152 @@
+{
+  "nav": {
+    "brand": "EventosVivos",
+    "events": "Events",
+    "reservations": "Reservations",
+    "authenticated": "✓ Authenticated"
+  },
+  "login": {
+    "title": "EventosVivos",
+    "subtitle": "Event Management System",
+    "microsoft": "Continue with Microsoft",
+    "or": "or",
+    "guest": "Continue as guest",
+    "guestNote": "Guests can browse events but cannot make reservations."
+  },
+  "events": {
+    "title": "EventosVivos",
+    "createToggle": "+ Create Event",
+    "cancelToggle": "Cancel",
+    "logout": "Log out",
+    "login": "Log in",
+    "loading": "Loading...",
+    "empty": "No events found.",
+    "loadMore": "Load more",
+    "loadError": "Error loading events",
+    "form": {
+      "heading": "Create Event",
+      "title": "Title *",
+      "titlePlaceholder": "Min 5 characters",
+      "type": "Type *",
+      "venue": "Venue *",
+      "capacity": "cap:",
+      "maxCapacity": "Max Capacity *",
+      "price": "Price *",
+      "start": "Start *",
+      "end": "End *",
+      "description": "Description *",
+      "descriptionPlaceholder": "Min 10 characters",
+      "creating": "Creating...",
+      "submit": "Create Event",
+      "success": "Event \"{{title}}\" created successfully."
+    },
+    "types": {
+      "Conferencia": "Conference",
+      "Taller": "Workshop",
+      "Concierto": "Concert"
+    },
+    "status": {
+      "Activo": "Active",
+      "Cancelado": "Cancelled",
+      "Completado": "Completed"
+    },
+    "filters": {
+      "heading": "Filters",
+      "search": "Search by title",
+      "searchPlaceholder": "E.g.: concert, workshop...",
+      "type": "Type",
+      "all": "All",
+      "status": "Status",
+      "venue": "Venue",
+      "from": "From",
+      "to": "To",
+      "apply": "Search",
+      "clear": "Clear"
+    },
+    "card": {
+      "capacity": "👥 Cap:",
+      "report": "📊 View Report",
+      "reserve": "🎟 Reserve"
+    },
+    "report": {
+      "title": "Report:",
+      "confirmed": "Confirmed tickets",
+      "available": "Available tickets",
+      "lost": "Lost tickets",
+      "occupancy": "Occupancy",
+      "revenue": "Total revenue",
+      "status": "Status",
+      "close": "Close"
+    },
+    "reservation": {
+      "title": "Reserve:",
+      "name": "Name *",
+      "email": "Email *",
+      "quantity": "Quantity *",
+      "submitting": "Reserving...",
+      "submit": "Confirm Reservation",
+      "success": "Reservation created. Status: PendingPayment",
+      "reservationId": "ID:",
+      "confirming": "Confirming payment...",
+      "confirmPayment": "✅ Confirm Payment",
+      "code": "Code:",
+      "close": "Close"
+    }
+  },
+  "reservations": {
+    "heading": "Reservation Management",
+    "searchHeading": "Search Reservation by ID",
+    "placeholder": "Reservation UUID...",
+    "search": "🔍 Search",
+    "loading": "Loading...",
+    "fields": {
+      "event": "Event",
+      "buyer": "Buyer",
+      "tickets": "Tickets",
+      "code": "Code",
+      "created": "Created",
+      "cancelled": "Cancelled",
+      "penalty": "Penalty",
+      "penaltyNote": "Tickets marked as lost (cancellation < 48h)"
+    },
+    "actions": {
+      "confirmPayment": "✅ Confirm Payment",
+      "cancelReservation": "❌ Cancel Reservation",
+      "hint": "You can only confirm if status is PendingPayment, or cancel if Confirmed."
+    },
+    "confirmResult": {
+      "heading": "✅ Payment confirmed",
+      "code": "Reservation code:",
+      "status": "Status:"
+    },
+    "cancelResult": {
+      "penaltyHeading": "⚠️ Reservation cancelled with penalty",
+      "successHeading": "✅ Reservation cancelled",
+      "penaltyNote": "Cancellation was made less than 48 hours before the event. Tickets have been marked as lost and are non-refundable.",
+      "successNote": "The reservation was successfully cancelled without penalty.",
+      "finalStatus": "Final status:"
+    },
+    "errors": {
+      "notFound": "No reservation found with the provided ID. Please verify the ID is correct.",
+      "searchFailed": "Error searching for reservation.",
+      "confirmFailed": "Error confirming payment.",
+      "cancelFailed": "Error cancelling reservation."
+    }
+  },
+  "auth": {
+    "loading": "Authenticating, please wait...",
+    "backToLogin": "Back to login",
+    "errors": {
+      "providerRejected": "Provider rejected access: {{detail}}",
+      "invalidResponse": "Invalid authentication response.",
+      "failed": "Could not complete authentication: {{detail}}",
+      "security": "Security error during the authentication process."
+    }
+  },
+  "lang": {
+    "label": "Language",
+    "es": "Español",
+    "en": "English",
+    "pt": "Português"
+  }
+}

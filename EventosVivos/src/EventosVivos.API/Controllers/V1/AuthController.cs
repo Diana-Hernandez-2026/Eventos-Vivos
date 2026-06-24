@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using EventosVivos.API.Configuration;
+using EventosVivos.Application.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -46,7 +47,7 @@ public class AuthController(
     {
         var userInfo = await ExchangeMicrosoftCodeAsync(request.Code, request.RedirectUri, ct);
         if (userInfo is null)
-            return Unauthorized(new { error = "Could not exchange Microsoft authorization code." });
+            return Unauthorized(new { error = I18n.AuthExchangeFailed });
 
         var accessToken  = GenerateAccessToken(userInfo.Value.Email, userInfo.Value.Name, "microsoft");
         var refreshToken = GenerateRefreshToken(userInfo.Value.Email, userInfo.Value.Name, "microsoft");
@@ -70,7 +71,7 @@ public class AuthController(
     {
         var principal = ValidateRefreshToken(request.RefreshToken);
         if (principal is null)
-            return Unauthorized(new { error = "Invalid or expired refresh token." });
+            return Unauthorized(new { error = I18n.AuthInvalidRefreshToken });
 
         var email    = principal.FindFirstValue(JwtRegisteredClaimNames.Sub)!;
         var name     = principal.FindFirstValue(JwtRegisteredClaimNames.Name) ?? email;

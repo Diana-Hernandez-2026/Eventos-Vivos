@@ -1,23 +1,25 @@
 <div class="page">
-  <h1>Gestión de Reservas</h1>
+  <h1>{{ 'reservations.heading' | translate }}</h1>
 
   <div class="card">
-    <h2>Buscar Reserva por ID</h2>
+    <h2>{{ 'reservations.searchHeading' | translate }}</h2>
     <div class="row">
-      <input [(ngModel)]="reservationId" placeholder="UUID de la reserva..." (keyup.enter)="search()">
+      <input [(ngModel)]="reservationId"
+             [placeholder]="'reservations.placeholder' | translate"
+             (keyup.enter)="search()">
       <button (click)="search()" [disabled]="!reservationId.trim() || loading">
-        🔍 Buscar
+        {{ 'reservations.search' | translate }}
       </button>
     </div>
 
-    <div *ngIf="loading" class="info">Cargando...</div>
+    <div *ngIf="loading" class="info">{{ 'reservations.loading' | translate }}</div>
     <div *ngIf="error" class="error">⚠️ {{ error }}</div>
 
     <!-- Reservation detail -->
     <div *ngIf="reservation && !loading" class="reservation-detail">
       <div class="detail-header">
         <div>
-          <p class="detail-label">Evento</p>
+          <p class="detail-label">{{ 'reservations.fields.event' | translate }}</p>
           <p class="detail-value">{{ reservation.eventTitle }}</p>
           <p class="detail-sub">📅 {{ reservation.eventStartDateTime | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
@@ -28,41 +30,41 @@
 
       <div class="detail-grid">
         <div>
-          <p class="detail-label">Comprador</p>
+          <p class="detail-label">{{ 'reservations.fields.buyer' | translate }}</p>
           <p class="detail-value">{{ reservation.buyerName }}</p>
           <p class="detail-sub">{{ reservation.buyerEmail }}</p>
         </div>
         <div>
-          <p class="detail-label">Entradas</p>
+          <p class="detail-label">{{ 'reservations.fields.tickets' | translate }}</p>
           <p class="detail-value">{{ reservation.quantity }}</p>
         </div>
         <div *ngIf="reservation.reservationCode">
-          <p class="detail-label">Código</p>
+          <p class="detail-label">{{ 'reservations.fields.code' | translate }}</p>
           <p class="detail-value code">{{ reservation.reservationCode }}</p>
         </div>
         <div>
-          <p class="detail-label">Creada</p>
+          <p class="detail-label">{{ 'reservations.fields.created' | translate }}</p>
           <p class="detail-value">{{ reservation.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
         <div *ngIf="reservation.cancelledAt">
-          <p class="detail-label">Cancelada</p>
+          <p class="detail-label">{{ 'reservations.fields.cancelled' | translate }}</p>
           <p class="detail-value">{{ reservation.cancelledAt | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
         <div *ngIf="reservation.isLost">
-          <p class="detail-label">Penalización</p>
-          <p class="detail-value warning">Entradas marcadas como perdidas (cancelación &lt; 48h)</p>
+          <p class="detail-label">{{ 'reservations.fields.penalty' | translate }}</p>
+          <p class="detail-value warning">{{ 'reservations.fields.penaltyNote' | translate }}</p>
         </div>
       </div>
 
       <div class="actions">
         <button (click)="confirmPayment()" [disabled]="!canConfirm || loading">
-          ✅ Confirmar Pago
+          {{ 'reservations.actions.confirmPayment' | translate }}
         </button>
         <button class="danger" (click)="cancelReservation()" [disabled]="!canCancel || loading">
-          ❌ Cancelar Reserva
+          {{ 'reservations.actions.cancelReservation' | translate }}
         </button>
         <span *ngIf="!canConfirm && !canCancel && reservation.status !== 'Cancelada'" class="hint">
-          Solo se puede confirmar si está en estado PendientePago, o cancelar si está Confirmada.
+          {{ 'reservations.actions.hint' | translate }}
         </span>
       </div>
     </div>
@@ -70,21 +72,21 @@
 
   <!-- Confirm result -->
   <div *ngIf="confirmResult" class="card result-card success-card">
-    <h3>✅ Pago confirmado</h3>
-    <p>Código de reserva: <strong class="code">{{ confirmResult.reservationCode }}</strong></p>
-    <p>Estado: <strong>{{ confirmResult.status }}</strong></p>
+    <h3>{{ 'reservations.confirmResult.heading' | translate }}</h3>
+    <p>{{ 'reservations.confirmResult.code' | translate }} <strong class="code">{{ confirmResult.reservationCode }}</strong></p>
+    <p>{{ 'reservations.confirmResult.status' | translate }} <strong>{{ confirmResult.status }}</strong></p>
   </div>
 
   <!-- Cancel result -->
-  <div *ngIf="cancelResult" class="card result-card" [ngClass]="cancelResult.isLost ? 'penalty-card' : 'success-card'">
-    <h3>{{ cancelResult.isLost ? '⚠️ Reserva cancelada con penalización' : '✅ Reserva cancelada' }}</h3>
+  <div *ngIf="cancelResult" class="card result-card"
+       [ngClass]="cancelResult.isLost ? 'penalty-card' : 'success-card'">
+    <h3>{{ (cancelResult.isLost ? 'reservations.cancelResult.penaltyHeading' : 'reservations.cancelResult.successHeading') | translate }}</h3>
     <p *ngIf="cancelResult.isLost" class="penalty-msg">
-      La cancelación se realizó con menos de 48 horas antes del evento.
-      Las entradas han sido marcadas como <strong>perdidas</strong> y no generan reembolso.
+      {{ 'reservations.cancelResult.penaltyNote' | translate }}
     </p>
     <p *ngIf="!cancelResult.isLost">
-      La reserva fue cancelada exitosamente sin penalización.
+      {{ 'reservations.cancelResult.successNote' | translate }}
     </p>
-    <p>Estado final: <strong>{{ cancelResult.status }}</strong></p>
+    <p>{{ 'reservations.cancelResult.finalStatus' | translate }} <strong>{{ cancelResult.status }}</strong></p>
   </div>
 </div>
