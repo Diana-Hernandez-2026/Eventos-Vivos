@@ -104,7 +104,9 @@ public class AuthController(
             if (!tokenResponse.IsSuccessStatusCode)
             {
                 var err = await tokenResponse.Content.ReadAsStringAsync(ct);
-                logger.LogWarning("Microsoft token exchange failed: {Error}", err);
+                logger.LogWarning("Microsoft token exchange failed [{Status}]: {Error}", (int)tokenResponse.StatusCode, err);
+                logger.LogWarning("Exchange params — client_id: {ClientId}, redirect_uri: {RedirectUri}, tenant: {Tenant}",
+                    _oauth.Microsoft.ClientId, redirectUri, _oauth.Microsoft.TenantId);
                 return null;
             }
 
