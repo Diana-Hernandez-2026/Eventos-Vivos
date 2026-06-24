@@ -27,7 +27,8 @@ public static class DependencyInjection
             if (environmentName != "Staging" && environmentName != "Production")
                 options.UseSqlite(connectionString);
             else
-                options.UseSqlServer(connectionString);
+                options.UseSqlServer(connectionString, sql =>
+                    sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null));
         });
 
         services.AddScoped<IVenueRepository, VenueRepository>();
