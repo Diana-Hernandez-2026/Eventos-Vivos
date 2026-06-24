@@ -20,7 +20,14 @@ public static class DependencyInjection
         if (string.IsNullOrWhiteSpace(connectionString))
             throw new InvalidOperationException(
                 "Connection string 'DefaultConnection' is not configured. " +
-                "Set ConnectionStrings__DefaultConnection as an environment variable or Application Setting.");
+                "Set ConnectionStrings__DefaultConnection as an Application Setting in Azure App Service.");
+
+        if (connectionString.Contains("Active Directory", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(
+                "The connection string uses Azure AD authentication ('Authentication=Active Directory Default'), " +
+                "which requires Managed Identity. Use SQL authentication instead: " +
+                "Server=tcp:<server>.database.windows.net,1433;Initial Catalog=<db>;" +
+                "User Id=<user>;Password=<pass>;Encrypt=True;TrustServerCertificate=False;");
 
         services.AddDbContext<AppDbContext>(options =>
         {
