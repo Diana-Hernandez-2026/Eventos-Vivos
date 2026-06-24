@@ -1,0 +1,35 @@
+name: Deploy → Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Write "yes" to confirm the swap from staging to production'
+        required: true
+
+jobs:
+  swap:
+    runs-on: ubuntu-latest
+    environment: production
+    if: ${{ github.event.inputs.confirm == 'yes' }}
+
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Swap staging → production
+        run: |
+          az webapp deployment slot swap \
+            --name eventosvivosapp \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --slot staging \
+            --target-slot production
+
+      - name: Verify production is up
+        run: |
+          sleep 15
+          curl --fail --silent --max-time 30 \
+            https://eventosvivosapp.azurewebsites.net/swagger/v1/swagger.json \
+            | grep -q '"title"' && echo "Production OK" || echo "WARNING: health check failed"

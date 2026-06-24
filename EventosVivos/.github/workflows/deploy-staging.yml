@@ -1,0 +1,63 @@
+name: Deploy → Staging
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/eventosvivos
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:staging-${{ github.sha }}
+            ${{ env.IMAGE }}:staging-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy image to staging slot
+        run: |
+          az webapp config container set \
+            --name eventosvivosapp \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --slot staging \
+            --container-image-name ${{ env.IMAGE }}:staging-${{ github.sha }} \
+            --container-registry-url https://ghcr.io \
+            --container-registry-user ${{ github.actor }} \
+            --container-registry-password ${{ secrets.GHCR_TOKEN }}
+
+      - name: Restart staging slot
+        run: |
+          az webapp restart \
+            --name eventosvivosapp \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --slot staging
