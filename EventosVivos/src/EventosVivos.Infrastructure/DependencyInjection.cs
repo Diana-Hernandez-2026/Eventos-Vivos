@@ -21,10 +21,10 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
         {
-            if (environmentName == "Development")
+            if (environmentName != "Staging" && environmentName != "Production")
                 options.UseSqlite(connectionString);
             else
-                options.UseNpgsql(connectionString);
+                options.UseSqlServer(connectionString);
         });
 
         services.AddScoped<IVenueRepository, VenueRepository>();

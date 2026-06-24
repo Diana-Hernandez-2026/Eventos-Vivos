@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <File Path="docker-compose.yml" />
     <Project Path="src/EventosVivos.API/EventosVivos.API.csproj" />
     <Project Path="src/EventosVivos.Application/EventosVivos.Application.csproj" />
     <Project Path="src/EventosVivos.Domain/EventosVivos.Domain.csproj" />

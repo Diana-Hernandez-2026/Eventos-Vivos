@@ -36,5 +36,5 @@ import { LanguageService, Lang } from '../../../core/services/language.service';
   `]
 })
 export class LanguageSwitcherComponent {
-  constructor(public langService: LanguageService) {}
+  constructor(public langService: LanguageService) { }
 }

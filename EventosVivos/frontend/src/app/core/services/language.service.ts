@@ -18,11 +18,13 @@ export class LanguageService {
     const saved = localStorage.getItem(STORAGE_KEY) as Lang | null;
     const active = saved && SUPPORTED.includes(saved) ? saved : DEFAULT;
     this.translate.use(active);
+    document.documentElement.lang = active;
   }
 
   use(lang: Lang): void {
     this.translate.use(lang);
     localStorage.setItem(STORAGE_KEY, lang);
+    document.documentElement.lang = lang;
   }
 
   get current(): Lang {
