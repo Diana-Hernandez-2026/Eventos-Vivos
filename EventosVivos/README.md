@@ -2,6 +2,9 @@
 
 Prueba Técnica Fullstack · .NET 9 + Angular 19
 
+**Aplicación desplegada:** https://eventosvivosapp.azurewebsites.net
+**Repositorio:** https://github.com/Diana-Hernandez-2026/Eventos-Vivos
+
 ---
 
 ## Arquitectura Elegida
@@ -29,7 +32,7 @@ SPA con lazy-loading por ruta, interceptor JWT centralizado, y Angular Signals p
 | Capa | Tecnología |
 |---|---|
 | Backend | .NET 9, ASP.NET Core |
-| ORM | Entity Framework Core 9 + SQLite |
+| ORM | Entity Framework Core 9 + SQLite (dev) / Azure SQL Server (staging/prod) |
 | CQRS | MediatR 12 |
 | Validación | FluentValidation 11 |
 | Autenticación | JWT Bearer + Microsoft OIDC (Azure AD) |
@@ -179,11 +182,17 @@ Middleware que intercepta POST/PUT/PATCH con header `Idempotency-Key`. Almacena 
 ### JWT + OIDC (Authorization Code Flow — Microsoft)
 El frontend redirige a Azure AD con un parámetro `state` aleatorio guardado en `sessionStorage` como protección CSRF. Al regresar, el backend recibe el `code` y lo intercambia server-side (usando el `client_secret` que nunca sale del servidor) por tokens de Microsoft. El `id_token` retornado es un JWT firmado por Microsoft — se parsea para extraer email y nombre, y se emite un JWT propio de la aplicación. Todos los endpoints de escritura requieren `[Authorize]`.
 
-### Azure App Services
-La API está lista para despliegue en Azure App Services:
-- `ASPNETCORE_ENVIRONMENT=Production` oculta detalles de errores
-- Connection string configurable vía App Settings
-- SQLite funciona en el filesystem de App Service (o migrar a Azure SQL para producción real)
+### Despliegue en Azure
+La aplicación está desplegada en Azure App Services con dos entornos:
+
+- **Producción:** https://eventosvivosapp.azurewebsites.net
+- **Staging:** https://eventosvivosapp-staging.azurewebsites.net
+
+Cada entorno usa su propia base de datos Azure SQL Server. El switch entre SQLite (local) y SQL Server (nube) es automático según `ASPNETCORE_ENVIRONMENT`.
+
+### CI/CD con GitHub Actions
+- **Push a `main`** → construye la imagen Docker, la publica en GitHub Container Registry y la despliega al slot de staging automáticamente.
+- **Deploy → Production** (disparo manual) → hace swap del slot staging al slot de producción, con health check post-swap.
 
 ---
 
