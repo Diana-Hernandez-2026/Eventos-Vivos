@@ -171,14 +171,6 @@ try
 
     var app = builder.Build();
 
-    // Auto-migrate and seed
-    using (var scope = app.Services.CreateScope())
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        db.Database.EnsureCreated();
-        await DataSeeder.SeedAsync(db);
-    }
-
     // Middleware pipeline
     app.UseCors(corsPolicy);  // must be first so all responses carry CORS headers
 
@@ -219,7 +211,29 @@ try
     app.MapFallbackToFile("index.html");
 
     logger.Info("EventosVivos API starting up");
-    app.Run();
+
+    // Start HTTP server first so Azure's warmup probe can succeed immediately,
+    // then initialize the DB in the background. This prevents SqlClient from
+    // blocking startup and crashing with SIGSEGV on Linux when the DB is
+    // unreachable (TCP timeout ~73s exhausts all retries before probe fires).
+    await app.StartAsync();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        try
+        {
+            db.Database.EnsureCreated();
+            await DataSeeder.SeedAsync(db);
+            logger.Info("Database initialized successfully");
+        }
+        catch (Exception ex)
+        {
+            logger.Error(ex, "Database initialization failed — app running without DB");
+        }
+    }
+
+    await app.WaitForShutdownAsync();
 }
 catch (Exception ex)
 {

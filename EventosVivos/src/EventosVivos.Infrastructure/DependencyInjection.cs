@@ -35,7 +35,7 @@ public static class DependencyInjection
                 options.UseSqlite(connectionString);
             else
                 options.UseSqlServer(connectionString, sql =>
-                    sql.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null));
+                    sql.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(5), errorNumbersToAdd: null));
         });
 
         services.AddScoped<IVenueRepository, VenueRepository>();
