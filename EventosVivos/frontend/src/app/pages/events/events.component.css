@@ -285,25 +285,80 @@ h3 {
 
 .actions {
     display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    margin-top: 15px;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 10px;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all .2s ease;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
 }
 
 .btn-primary {
     background: #1976d2;
-    padding: 10px 16px;
+    color: white;
 }
 
 .btn-primary:hover {
-    background: #303f9f;
+    background: #1565c0;
+    transform: translateY(-1px);
+}
+
+.btn-success {
+    background: #ecfdf3;
+    color: #027a48;
+    border: 1px solid #a6f4c5;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: #fef3f2;
+    color: #b42318;
+    border: 1px solid #fecdca;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
 }
 
 .btn-secondary {
-    background: #e0e0e0;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 6px;
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
 }
 
 @media (max-width: 768px) {

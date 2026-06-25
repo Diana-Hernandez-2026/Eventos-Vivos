@@ -166,8 +166,8 @@
         <span> → {{ event.endDateTime | date:'HH:mm' }}</span>
       </div>
       <div class="event-actions">
-        <button (click)="viewReport(event)">{{ 'events.card.report' | translate }}</button>
-        <button *ngIf="auth.isAuthenticated()" (click)="openReservation(event)">
+        <button class="btn-primary" (click)="viewReport(event)">{{ 'events.card.report' | translate }}</button>
+        <button class="btn-success" *ngIf="auth.isAuthenticated()" (click)="openReservation(event)">
           {{ 'events.card.reserve' | translate }}
         </button>
       </div>
@@ -232,7 +232,7 @@
       <div *ngIf="reservationSuccess" class="success">
         {{ reservationSuccess }}<br>
         <small>{{ 'events.reservation.reservationId' | translate }} {{ lastReservationId }}</small><br>
-        <button (click)="confirmPayment()" [disabled]="confirming">
+        <button class="btn-success" (click)="confirmPayment()" [disabled]="confirming">
           {{ (confirming ? 'events.reservation.confirming' : 'events.reservation.confirmPayment') | translate }}
         </button>
         <div *ngIf="paymentResult" class="success">
