@@ -175,7 +175,7 @@
   </div>
 
   <div *ngIf="page?.hasNextPage" class="pagination">
-    <button (click)="loadMore()">{{ 'events.loadMore' | translate }}</button>
+    <button class="btn-primary" (click)="loadMore()">{{ 'events.loadMore' | translate }}</button>
   </div>
 
   <!-- Report Modal -->
@@ -208,7 +208,7 @@
           <td>{{ selectedReport.status }}</td>
         </tr>
       </table>
-      <button (click)="selectedReport = null">{{ 'events.report.close' | translate }}</button>
+      <button class="btn-secondary" (click)="selectedReport = null">{{ 'events.report.close' | translate }}</button>
     </div>
   </div>
 
@@ -225,7 +225,7 @@
       <label>{{ 'events.reservation.quantity' | translate }}
         <input type="number" [(ngModel)]="reservation.quantity" min="1">
       </label>
-      <button (click)="submitReservation()" [disabled]="reserving">
+      <button class="btn-primary" (click)="submitReservation()" [disabled]="reserving">
         {{ (reserving ? 'events.reservation.submitting' : 'events.reservation.submit') | translate }}
       </button>
       <div *ngIf="reservationError" class="error">{{ reservationError }}</div>
@@ -239,7 +239,7 @@
           {{ 'events.reservation.code' | translate }} {{ paymentResult.reservationCode }}
         </div>
       </div>
-      <button class="secondary" (click)="selectedEvent = null">{{ 'events.reservation.close' | translate }}</button>
+      <button class="btn-secondary" (click)="selectedEvent = null">{{ 'events.reservation.close' | translate }}</button>
     </div>
   </div>
 </div>

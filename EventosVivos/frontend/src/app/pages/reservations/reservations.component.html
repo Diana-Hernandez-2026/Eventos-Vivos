@@ -4,9 +4,8 @@
   <div class="card">
     <h2>{{ 'reservations.searchHeading' | translate }}</h2>
     <div class="row">
-      <input [(ngModel)]="reservationId"
-             [placeholder]="'reservations.placeholder' | translate"
-             (keyup.enter)="search()">
+      <input [(ngModel)]="reservationId" [placeholder]="'reservations.placeholder' | translate"
+        (keyup.enter)="search()">
       <button (click)="search()" [disabled]="!reservationId.trim() || loading">
         {{ 'reservations.search' | translate }}
       </button>
@@ -57,10 +56,10 @@
       </div>
 
       <div class="actions">
-        <button (click)="confirmPayment()" [disabled]="!canConfirm || loading">
+        <button class="btn-success" (click)="confirmPayment()" [disabled]="!canConfirm || loading">
           {{ 'reservations.actions.confirmPayment' | translate }}
         </button>
-        <button class="danger" (click)="cancelReservation()" [disabled]="!canCancel || loading">
+        <button class="btn-danger" (click)="cancelReservation()" [disabled]="!canCancel || loading">
           {{ 'reservations.actions.cancelReservation' | translate }}
         </button>
         <span *ngIf="!canConfirm && !canCancel && reservation.status !== 'Cancelada'" class="hint">
@@ -73,14 +72,15 @@
   <!-- Confirm result -->
   <div *ngIf="confirmResult" class="card result-card success-card">
     <h3>{{ 'reservations.confirmResult.heading' | translate }}</h3>
-    <p>{{ 'reservations.confirmResult.code' | translate }} <strong class="code">{{ confirmResult.reservationCode }}</strong></p>
+    <p>{{ 'reservations.confirmResult.code' | translate }} <strong class="code">{{ confirmResult.reservationCode
+        }}</strong></p>
     <p>{{ 'reservations.confirmResult.status' | translate }} <strong>{{ confirmResult.status }}</strong></p>
   </div>
 
   <!-- Cancel result -->
-  <div *ngIf="cancelResult" class="card result-card"
-       [ngClass]="cancelResult.isLost ? 'penalty-card' : 'success-card'">
-    <h3>{{ (cancelResult.isLost ? 'reservations.cancelResult.penaltyHeading' : 'reservations.cancelResult.successHeading') | translate }}</h3>
+  <div *ngIf="cancelResult" class="card result-card" [ngClass]="cancelResult.isLost ? 'penalty-card' : 'success-card'">
+    <h3>{{ (cancelResult.isLost ? 'reservations.cancelResult.penaltyHeading' :
+      'reservations.cancelResult.successHeading') | translate }}</h3>
     <p *ngIf="cancelResult.isLost" class="penalty-msg">
       {{ 'reservations.cancelResult.penaltyNote' | translate }}
     </p>

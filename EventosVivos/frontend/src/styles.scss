@@ -1,3 +1,127 @@
-*, *::before, *::after { box-sizing: border-box; }
-body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
-h1, h2, h3 { font-weight: 600; }
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+}
+
+h1,
+h2,
+h3 {
+    font-weight: 600;
+}
+
+button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 42px;
+    padding: 0 18px;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 0.9rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-1px);
+}
+
+button:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===========================
+   PRIMARY
+=========================== */
+
+.btn-primary,
+button:not(.danger):not(.secondary):not(.btn-danger):not(.btn-secondary) {
+    background: #1976d2;
+    color: white;
+}
+
+.btn-primary:hover,
+button:not(.danger):not(.secondary):not(.btn-danger):not(.btn-secondary):hover {
+    background: #1565c0;
+}
+
+/* ===========================
+   SUCCESS
+=========================== */
+
+.btn-success {
+    background: #22c55e;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #16a34a;
+}
+
+/* ===========================
+   DANGER
+=========================== */
+
+.danger,
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.danger:hover,
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* ===========================
+   SECONDARY
+=========================== */
+
+.secondary,
+.btn-secondary {
+    background: #C7BBB9;
+    color: white;
+}
+
+.secondary:hover,
+.btn-secondary:hover {
+    background: #dfcdca;
+}
+
+/* ===========================
+   ACTION CONTAINERS
+=========================== */
+
+.actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+
+    margin-top: 16px;
+    padding-top: 16px;
+}
+
+.event-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}

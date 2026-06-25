@@ -101,19 +101,6 @@ select:focus {
     box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
 }
 
-button {
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-button.secondary {
-    background: #666;
-}
-
-button:disabled {
-    opacity: .6;
-}
-
 .events-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -283,47 +270,15 @@ h3 {
     font-weight: 600;
 }
 
-.actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
+/* Override global border-radius for btn variants in this page */
 .btn-primary,
 .btn-success,
 .btn-danger,
 .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-
-    min-height: 42px;
-    padding: 0 18px;
-
-    border: none;
     border-radius: 10px;
-
-    font-size: 0.9rem;
-    font-weight: 600;
-
-    cursor: pointer;
-    transition: all .2s ease;
-
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .08);
 }
 
-.btn-primary {
-    background: #1976d2;
-    color: white;
-}
-
-.btn-primary:hover {
-    background: #1565c0;
-    transform: translateY(-1px);
-}
-
+/* Outlined success — different from global solid green */
 .btn-success {
     background: #ecfdf3;
     color: #027a48;
@@ -332,9 +287,10 @@ h3 {
 
 .btn-success:hover {
     background: #16a34a;
-    transform: translateY(-1px);
+    color: white;
 }
 
+/* Outlined danger — different from global solid red */
 .btn-danger {
     background: #fef3f2;
     color: #b42318;
@@ -343,22 +299,7 @@ h3 {
 
 .btn-danger:hover {
     background: #dc2626;
-    transform: translateY(-1px);
-}
-
-.btn-secondary {
-    background: #C7BBB9;
     color: white;
-}
-
-.btn-secondary:hover {
-    background: #DBD0CE;
-}
-
-button:disabled {
-    opacity: .5;
-    cursor: not-allowed;
-    transform: none;
 }
 
 @media (max-width: 768px) {
