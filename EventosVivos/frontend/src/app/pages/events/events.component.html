@@ -2,13 +2,13 @@
   <header>
     <h1>{{ 'events.title' | translate }}</h1>
     <div class="header-actions">
-      <button *ngIf="auth.isAuthenticated()" (click)="showCreate = !showCreate" class="btn-secondary">
+      <button *ngIf="auth.isAuthenticated()" (click)="showCreate = !showCreate" class="btn-primary">
         {{ (showCreate ? 'events.cancelToggle' : 'events.createToggle') | translate }}
       </button>
-      <button *ngIf="auth.isAuthenticated()" class="secondary" (click)="auth.logout()">
+      <button *ngIf="auth.isAuthenticated()" class="btn-secondary" (click)="auth.logout()">
         {{ 'events.logout' | translate }}
       </button>
-      <button *ngIf="!auth.isAuthenticated()" class="secondary" (click)="router.navigate(['/login'])">
+      <button *ngIf="!auth.isAuthenticated()" class="btn-secondary" (click)="router.navigate(['/login'])">
         {{ 'events.login' | translate }}
       </button>
     </div>
@@ -135,7 +135,7 @@
     </div>
     <div class="actions">
       <button class="btn-primary" (click)="loadEvents()">{{ 'events.filters.apply' | translate }}</button>
-      <button class="secondary" (click)="clearFilters()">{{ 'events.filters.clear' | translate }}</button>
+      <button class="btn-secondary" (click)="clearFilters()">{{ 'events.filters.clear' | translate }}</button>
     </div>
   </div>
 
