@@ -14,7 +14,7 @@ Prueba Técnica Fullstack · .NET 9 + Angular 19
 ```
 EventosVivos.Domain          → Entidades, enums, interfaces, excepciones de dominio
 EventosVivos.Application     → Comandos/Queries (MediatR), validadores (FluentValidation), DTOs
-EventosVivos.Infrastructure  → EF Core + SQLite, repositorios, seeds
+EventosVivos.Infrastructure  → EF Core + SQLite (dev) / SQL Server (prod), repositorios, seeds
 EventosVivos.API             → Controllers, middleware, JWT/OIDC, configuración
 EventosVivos.Tests           → Pruebas unitarias (xUnit + Moq + FluentAssertions)
 ```
@@ -86,7 +86,7 @@ export const environment = {
 ```bash
 cd EventosVivos
 
-# Ejecutar la API (crea la DB SQLite y siembra los venues automáticamente)
+# Ejecutar la API (crea la DB SQLite local y siembra los venues automáticamente)
 dotnet run --project src/EventosVivos.API
 
 # La API queda disponible en:
@@ -97,6 +97,7 @@ dotnet run --project src/EventosVivos.API
 ### Tests
 
 ```bash
+cd EventosVivos
 dotnet test
 # Resultado esperado: 23 tests, 0 failures
 ```
@@ -174,7 +175,7 @@ npm start
 El cursor codifica en base64 `createdAt|id` del último ítem. Esto permite paginación estable sin OFFSET, apto para producción con grandes volúmenes.
 
 ### Idempotencia
-Middleware que intercepta POST/PUT/PATCH con header `Idempotency-Key`. Almacena la respuesta en `IdempotencyRecords` (SQLite) con TTL de 24h. Peticiones duplicadas reciben exactamente la misma respuesta sin reejecutar la lógica de negocio.
+Middleware que intercepta POST/PUT/PATCH con header `Idempotency-Key`. Almacena la respuesta en la tabla `IdempotencyRecords` con TTL de 24h. Peticiones duplicadas reciben exactamente la misma respuesta sin reejecutar la lógica de negocio.
 
 ### Manejo de errores
 `ExceptionHandlingMiddleware` mapea excepciones de dominio a códigos HTTP apropiados (`422`, `404`, `409`) y retorna `application/problem+json`. En desarrollo incluye stacktrace; en producción solo el mensaje.
