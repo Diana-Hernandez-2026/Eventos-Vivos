@@ -170,17 +170,6 @@ h3 {
     margin: .25rem 0;
 }
 
-.event-actions {
-    display: flex;
-    gap: .5rem;
-    margin-top: .75rem;
-}
-
-.event-actions button {
-    font-size: .8rem;
-    padding: .35rem .7rem;
-}
-
 .loading {
     text-align: center;
     padding: 2rem;

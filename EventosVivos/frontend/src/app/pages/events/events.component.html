@@ -225,21 +225,24 @@
       <label>{{ 'events.reservation.quantity' | translate }}
         <input type="number" [(ngModel)]="reservation.quantity" min="1">
       </label>
-      <button class="btn-primary" (click)="submitReservation()" [disabled]="reserving">
-        {{ (reserving ? 'events.reservation.submitting' : 'events.reservation.submit') | translate }}
-      </button>
-      <div *ngIf="reservationError" class="error">{{ reservationError }}</div>
-      <div *ngIf="reservationSuccess" class="success">
-        {{ reservationSuccess }}<br>
-        <small>{{ 'events.reservation.reservationId' | translate }} {{ lastReservationId }}</small><br>
-        <button class="btn-success" (click)="confirmPayment()" [disabled]="confirming">
-          {{ (confirming ? 'events.reservation.confirming' : 'events.reservation.confirmPayment') | translate }}
+      <div class="actions">
+        <button class="btn-primary" (click)="submitReservation()" [disabled]="reserving">
+          {{ (reserving ? 'events.reservation.submitting' : 'events.reservation.submit') | translate }}
         </button>
-        <div *ngIf="paymentResult" class="success">
-          {{ 'events.reservation.code' | translate }} {{ paymentResult.reservationCode }}
+        <div *ngIf="reservationError" class="error">{{ reservationError }}</div>
+        <div *ngIf="reservationSuccess" class="success">
+          {{ reservationSuccess }}<br>
+          <small>{{ 'events.reservation.reservationId' | translate }} {{ lastReservationId }}</small><br>
+          <button class="btn-success" (click)="confirmPayment()" [disabled]="confirming">
+            {{ (confirming ? 'events.reservation.confirming' : 'events.reservation.confirmPayment') | translate }}
+          </button>
+          <div *ngIf="paymentResult" class="success">
+            {{ 'events.reservation.code' | translate }} {{ paymentResult.reservationCode }}
+          </div>
         </div>
+        <button class="btn-secondary" (click)="selectedEvent = null">{{ 'events.reservation.close' | translate
+          }}</button>
       </div>
-      <button class="btn-secondary" (click)="selectedEvent = null">{{ 'events.reservation.close' | translate }}</button>
     </div>
   </div>
 </div>
